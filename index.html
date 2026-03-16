@@ -386,14 +386,6 @@
 </head>
 <body>
 
-<!-- ── Start (tap to begin) ── -->
-<div id="s-start" class="screen">
-  <span class="material-symbols-rounded" style="font-size:64px;opacity:.7;margin-bottom:28px;font-variation-settings:'FILL' 0,'wght' 200,'GRAD' 0,'opsz' 48;">explore</span>
-  <div style="font-size:26px;font-weight:700;margin-bottom:12px;">どこかへ</div>
-  <div style="font-size:14px;color:var(--muted);line-height:1.9;text-align:center;padding:0 40px;margin-bottom:48px;">目的地はたどり着くまで秘密。<br>近くの公開スポットがランダムに選ばれます。</div>
-  <button id="start-btn" onclick="startApp()" style="background:white;color:#1c1c1e;border:none;border-radius:50px;padding:16px 52px;font-family:var(--font);font-size:17px;font-weight:700;cursor:pointer;letter-spacing:.04em;">はじめる</button>
-</div>
-
 <!-- ── Loading ── -->
 <div id="s-loading" class="screen hidden">
   <div class="spin-ring"></div>
@@ -767,22 +759,25 @@ let S = {
   arrivedFlag: false,
   watchId:     null,
   activeTab:   'hist',
+  arrowDeg:    0,        // 矢印の現在角度（累積・最短経路計算用）
 };
 
 const POOL_TTL    = 12 * 3600 * 1000; // 12時間キャッシュ
-const POOL_RADIUS = 150000;           // 150km
-const POOL_MIN    = 30;               // プールが少なくなったら再取得
+const POOL_RADIUS = 16000;            // 16km（15km上限に+1kmバッファ）
+const POOL_MIN    = 10;               // プールが少なくなったら再取得
+const DIST_MIN    = 1000;             // 選出最短 1km
+const DIST_MAX    = 15000;            // 選出最長 15km
+const STORE_KEY   = 'dokoka_v3';      // v3: 旧150kmキャッシュを無効化
 
 // ═══════════════════════════════════════
 //  PERSIST
 // ═══════════════════════════════════════
 function load() {
   try {
-    const d = JSON.parse(localStorage.getItem('dokoka_v2') || '{}');
+    const d = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
     S.visited   = d.visited   || [];
     S.skipStack = d.skipStack || [];
     S.target    = d.target    || null;
-    // プールキャッシュ復元
     if(d.pool && d.poolTime && Date.now() - d.poolTime < POOL_TTL){
       S.pool     = d.pool;
       S.poolLat  = d.poolLat;
@@ -793,7 +788,7 @@ function load() {
 }
 function save() {
   try {
-    localStorage.setItem('dokoka_v2', JSON.stringify({
+    localStorage.setItem(STORE_KEY, JSON.stringify({
       visited:   S.visited,
       skipStack: S.skipStack,
       target:    S.target,
@@ -866,21 +861,20 @@ const JA_RE = /[\u3000-\u9fff\uff00-\uffef]/;
 
 async function fetchFromOverpass(lat, lng) {
   const r = POOL_RADIUS;
-  const q = `[out:json][timeout:30];
+  // node を優先 (高速)、way/relation は公園・寺社のみ
+  const q = `[out:json][timeout:20];
 (
   node["tourism"~"attraction|museum|viewpoint|zoo|theme_park|aquarium|gallery"]["name"](around:${r},${lat},${lng});
-  node["historic"]["name"](around:${r},${lat},${lng});
+  node["historic"~"castle|ruins|monument|memorial|shrine|archaeological_site"]["name"](around:${r},${lat},${lng});
   node["leisure"~"park|garden|nature_reserve"]["name"](around:${r},${lat},${lng});
   node["amenity"="place_of_worship"]["name"](around:${r},${lat},${lng});
-  node["natural"~"peak|waterfall|beach|hot_spring|cave_entrance|spring"]["name"](around:${r},${lat},${lng});
-  way["tourism"~"attraction|museum|viewpoint|zoo|theme_park|aquarium"]["name"](around:${r},${lat},${lng});
-  way["historic"]["name"](around:${r},${lat},${lng});
-  way["leisure"~"park|garden|nature_reserve"]["name"](around:${r},${lat},${lng});
+  node["natural"~"peak|waterfall|beach|hot_spring|cave_entrance"]["name"](around:${r},${lat},${lng});
+  way["leisure"~"park|garden"]["name"](around:${r},${lat},${lng});
   way["amenity"="place_of_worship"]["name"](around:${r},${lat},${lng});
-  relation["leisure"~"park|garden|nature_reserve"]["name"](around:${r},${lat},${lng});
-  relation["historic"]["name"](around:${r},${lat},${lng});
+  way["tourism"~"attraction|museum"]["name"](around:${r},${lat},${lng});
+  way["historic"~"castle|ruins"]["name"](around:${r},${lat},${lng});
 );
-out center;`;
+out center qt;`;
 
   const res = await fetch('https://overpass-api.de/api/interpreter', {
     method: 'POST',
@@ -900,6 +894,9 @@ out center;`;
     const elat = e.lat ?? e.center?.lat;
     const elng = e.lon ?? e.center?.lon;
     if(!elat || !elng) continue;
+    // 距離を再計算して確実に上限内のみ
+    const dm = haversine(lat, lng, elat, elng);
+    if(dm > DIST_MAX) continue;
     places.push({ name, lat: elat, lng: elng, cat: catFromTags(e.tags||{}) });
   }
   return places;
@@ -952,20 +949,32 @@ function usedNames(){
 
 function pickFromPool(){
   const used = usedNames();
-  let pool = S.pool.filter(p=>!used.has(p.name));
-  // 全部使い切ったら到着リストのみリセット
-  if(pool.length === 0){ S.visited=[]; save(); pool = S.pool.filter(p=>!new Set(S.skipStack.map(s=>s.name)).has(p.name)); }
-  if(pool.length === 0){ pool = [...S.pool]; }
 
-  // weight ∝ 1 / (km^0.7 + 0.5)  近いほど高確率、遠くてもゼロにならない
-  const weighted = pool.map(p=>{
-    const km = haversine(S.lat, S.lng, p.lat, p.lng) / 1000;
-    return { ...p, w: 1 / (Math.pow(km, 0.7) + 0.5) };
-  });
-  const tot = weighted.reduce((s,p)=>s+p.w, 0);
-  let r = Math.random() * tot;
-  for(const p of weighted){ r -= p.w; if(r <= 0) return p; }
-  return weighted[0];
+  // 1〜15km 圏内に絞る
+  function inRange(p){
+    const m = haversine(S.lat, S.lng, p.lat, p.lng);
+    return m >= DIST_MIN && m <= DIST_MAX;
+  }
+
+  let pool = S.pool.filter(p => !used.has(p.name) && inRange(p));
+
+  // 範囲内が尽きたら訪問履歴だけリセット
+  if(pool.length === 0){
+    S.visited = []; save();
+    pool = S.pool.filter(p => inRange(p) && !new Set(S.skipStack.map(s=>s.name)).has(p.name));
+  }
+  // それでもなければレンジ内全部
+  if(pool.length === 0){
+    pool = S.pool.filter(p => inRange(p));
+  }
+  // レンジ内が一件もなければフォールバック（プール再取得が必要な状況）
+  if(pool.length === 0){
+    pool = S.pool.filter(p => !used.has(p.name));
+    if(pool.length === 0) pool = [...S.pool];
+  }
+
+  // 1〜15km 内は均等ランダム（距離による偏りなし）
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 // ═══════════════════════════════════════
@@ -1017,18 +1026,22 @@ function refreshNav(){
   document.getElementById('dist-num').textContent = v;
   document.getElementById('dist-unit').textContent = u;
 
-  let rotation, label, hint='';
+  let targetDeg, label, hint='';
   if(S.compassOn && S.heading!=null){
     const rel = bear - S.heading;
-    rotation = rel;
+    targetDeg = rel;
     label = relDirText(rel);
   } else {
-    rotation = bear;
+    targetDeg = bear;
     label = '前方';
     hint = 'コンパス未使用（北が上）';
   }
 
-  document.getElementById('nav-arrow').style.transform = `rotate(${rotation}deg)`;
+  // 最短経路で回転：前回角度との差を -180〜+180 に正規化して累積
+  const delta = ((targetDeg - S.arrowDeg) % 360 + 540) % 360 - 180;
+  S.arrowDeg += delta;
+
+  document.getElementById('nav-arrow').style.transform = `rotate(${S.arrowDeg}deg)`;
   document.getElementById('dist-lbl').textContent = label;
   document.getElementById('compass-hint').textContent = hint;
 }
@@ -1145,12 +1158,8 @@ function renderMenu(){
   } else {
     body.innerHTML = `
       <div class="sett-row">
-        <div class="sett-lbl">到着判定の半径</div>
-        <div class="sett-val">50m（固定）</div>
-      </div>
-      <div class="sett-row">
         <div class="sett-lbl">読み込み済みスポット数</div>
-        <div class="sett-val">${poolCount.toLocaleString()}件</div>
+        <div class="sett-val">${poolCount.toLocaleString()}件（半径15km以内）</div>
       </div>
       <div class="sett-row">
         <div class="sett-lbl">スポットを再取得</div>
@@ -1196,7 +1205,6 @@ function closeDlg(id){ document.getElementById(id).classList.remove('open'); }
 async function startApp(){
   showScreen('loading');
   setLoadingText('現在地を取得中…');
-  initCompass();
 
   if(!navigator.geolocation){ showScreen('error'); return; }
 
@@ -1218,7 +1226,8 @@ async function startApp(){
 function init(){
   load();
   syncUndoBtn();
-  showScreen('start');
+  initCompass();
+  startApp();
 }
 
 function startWatch(){
