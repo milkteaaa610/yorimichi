@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>どこかへ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=LINE+Seed+JP&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;}
+
+    :root {
+      --bg:       #1c1c1e;
+      --bg2:      #2c2c2e;
+      --btn-bg:   rgba(58,58,67,0.88);
+      --text:     #ffffff;
+      --muted:    rgba(255,255,255,0.50);
+      --green:    #2ecc52;
+      --arrival:  #1db950;
+      --danger:   #ff3b30;
+      --font:     'LINE Seed JP', 'Noto Sans JP', 'Hiragino Sans', sans-serif;
+      --mono:     'Inter', system-ui, sans-serif;
+      --safe-t:   env(safe-area-inset-top, 0px);
+      --safe-b:   env(safe-area-inset-bottom, 0px);
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+    }
+
+    /* ─── SCREENS ─── */
+    .screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      will-change: opacity, transform;
+      transition: opacity .38s ease, transform .38s ease;
+    }
+    .screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(.97);
+    }
+
+    /* ─── LOADING ─── */
+    #s-loading { background: var(--bg); }
+
+    .spin-ring {
+      width: 52px; height: 52px;
+      border: 2.5px solid rgba(255,255,255,.12);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .75s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin { to{ transform:rotate(360deg); } }
+
+    .loading-txt {
+      font-size: 14px;
+      color: var(--muted);
+      letter-spacing: .06em;
+    }
+
+    /* ─── NAV ─── */
+    #s-nav { background: var(--bg); }
+
+    .arrow-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 52px;
+      width: 160px;
+      height: 200px;
+    }
+
+    #nav-arrow {
+      font-size: 160px;
+      color: white;
+      transition: transform .25s cubic-bezier(.25,.46,.45,.94);
+      filter: drop-shadow(0 0 24px rgba(255,255,255,.08));
+      font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 48;
+      line-height: 1;
+    }
+
+    .dist-wrap { text-align: center; }
+
+    .dist-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 4px;
+      line-height: 1;
+    }
+
+    .dist-num {
+      font-family: 'Inter', monospace;
+      font-size: 76px;
+      font-weight: 300;
+      letter-spacing: -3px;
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .dist-unit {
+      font-family: 'Inter', monospace;
+      font-size: 28px;
+      font-weight: 300;
+      color: rgba(255,255,255,.85);
+      letter-spacing: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .dist-label {
+      margin-top: 10px;
+      font-size: 17px;
+      color: var(--muted);
+      letter-spacing: .12em;
+    }
+
+    .compass-hint {
+      position: absolute;
+      bottom: calc(140px + var(--safe-b));
+      font-size: 12px;
+      color: rgba(255,255,255,.28);
+      letter-spacing: .08em;
+    }
+
+    /* ─── ARRIVAL ─── */
+    #s-arrival {
+      background: var(--arrival);
+      animation: none;
+    }
+    #s-arrival.hidden { transform: scale(.97); }
+
+    .arrival-pin {
+      font-size: 68px;
+      color: white;
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+      margin-bottom: 22px;
+      animation: pinBounce .55s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes pinBounce {
+      from{ transform:scale(.4) translateY(30px); opacity:0; }
+      to  { transform:scale(1) translateY(0);     opacity:1; }
+    }
+
+    .arrival-lbl {
+      font-size: 17px;
+      color: rgba(255,255,255,.82);
+      letter-spacing: .12em;
+      margin-bottom: 10px;
+    }
+
+    .arrival-name {
+      font-size: 34px;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      padding: 0 36px;
+      line-height: 1.3;
+      margin-bottom: 28px;
+    }
+
+    .arrival-dist-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 21px;
+      color: rgba(255,255,255,.88);
+    }
+
+    .next-btn {
+      position: absolute;
+      bottom: calc(36px + var(--safe-b));
+      left: 24px; right: 24px;
+      background: rgba(255,255,255,.22);
+      border: none;
+      border-radius: 50px;
+      padding: 17px;
+      color: white;
+      font-family: var(--font);
+      font-size: 16px;
+      letter-spacing: .06em;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: background .15s, transform .12s;
+    }
+    .next-btn:active { background: rgba(255,255,255,.32); transform: scale(.97); }
+
+    /* ─── ERROR ─── */
+    #s-error { background: var(--bg); text-align: center; padding: 48px; }
+    .err-icon { font-size: 52px !important; font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 48; opacity: .45; margin-bottom: 20px; display: block; }
+    .err-title { font-size: 19px; font-weight: 700; margin-bottom: 10px; }
+    .err-msg { font-size: 14px; color: var(--muted); line-height: 1.75; }
+    .retry-btn {
+      margin-top: 32px;
+      background: rgba(255,255,255,.12);
+      border: none;
+      border-radius: 50px;
+      padding: 13px 44px;
+      color: white;
+      font-family: var(--font);
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    /* ─── BOTTOM CONTROLS ─── */
+    #controls {
+      position: fixed;
+      left: 0; right: 0;
+      bottom: calc(36px + var(--safe-b));
+      padding: 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .ctrl-col { display: flex; flex-direction: column; gap: 12px; pointer-events: all; }
+
+    .cbtn {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: var(--btn-bg);
+      border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: transform .13s, background .13s, opacity .2s;
+      pointer-events: all;
+    }
+    .cbtn:active { transform: scale(.9); background: rgba(80,80,90,.95); }
+    .cbtn.off { opacity: .3; pointer-events: none; }
+    .material-symbols-rounded {
+      font-family: 'Material Symbols Rounded';
+      font-weight: normal;
+      font-style: normal;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      direction: ltr;
+      -webkit-font-feature-settings: 'liga';
+      font-feature-settings: 'liga';
+      -webkit-font-smoothing: antialiased;
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+    }
+    .cbtn .material-symbols-rounded { font-size: 21px; color: white; }
+
+    /* ─── MENU OVERLAY ─── */
+    #menu-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.52);
+      z-index: 100;
+      opacity: 0; pointer-events: none;
+      transition: opacity .3s;
+    }
+    #menu-overlay.open { opacity:1; pointer-events:all; }
+
+    #menu-panel {
+      position: fixed;
+      right: 0; top: 0; bottom: 0;
+      width: min(88%, 380px);
+      background: #1c1c1e;
+      z-index: 101;
+      display: flex; flex-direction: column;
+      transform: translateX(100%);
+      transition: transform .34s cubic-bezier(.4,0,.2,1);
+      box-shadow: -12px 0 40px rgba(0,0,0,.5);
+    }
+    #menu-panel.open { transform: translateX(0); }
+
+    .menu-head {
+      padding: calc(20px + var(--safe-t)) 20px 16px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .menu-title-txt { font-size: 19px; font-weight: 700; letter-spacing: .03em; }
+
+    .menu-close-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: rgba(255,255,255,.1);
+      border: none; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: white;
+    }
+
+    .menu-tabs {
+      display: flex;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .mtab {
+      flex: 1; padding: 13px 8px;
+      background: none; border: none;
+      color: var(--muted); font-family: var(--font); font-size: 14px;
+      cursor: pointer; letter-spacing: .04em;
+      border-bottom: 2px solid transparent;
+      transition: color .2s, border-color .2s;
+    }
+    .mtab.active { color: #fff; border-bottom-color: #fff; }
+
+    .menu-body { flex: 1; overflow-y: auto; padding: 14px; }
+
+    .hist-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 12px; border-radius: 13px;
+      background: var(--bg2); margin-bottom: 8px;
+    }
+    .hist-icon { font-size: 19px; color: var(--green); font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20; }
+    .hist-name { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+    .hist-meta { font-size: 12px; color: var(--muted); }
+
+    .empty-box { text-align: center; padding: 64px 20px; color: var(--muted); font-size: 14px; line-height: 2; }
+    .empty-emoji { font-size: 44px; display: block; margin-bottom: 12px; opacity: .4; }
+
+    /* Settings */
+    .sett-row { padding: 18px 4px; border-bottom: 1px solid rgba(255,255,255,.06); }
+    .sett-lbl { font-size: 13px; color: var(--muted); margin-bottom: 6px; letter-spacing: .04em; }
+    .sett-val { font-size: 16px; font-weight: 600; }
+    input[type=range] {
+      -webkit-appearance: none; width: 100%; height: 3px;
+      background: rgba(255,255,255,.18); border-radius: 2px; margin-top: 14px; outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 22px; height: 22px;
+      background: white; border-radius: 50%; cursor: pointer;
+      box-shadow: 0 1px 6px rgba(0,0,0,.4);
+    }
+    .danger-btn {
+      width: 100%; margin-top: 12px;
+      background: rgba(255,59,48,.14); border: none;
+      color: var(--danger); padding: 12px;
+      border-radius: 11px; font-family: var(--font); font-size: 14px; cursor: pointer;
+      transition: background .15s;
+    }
+    .danger-btn:active { background: rgba(255,59,48,.25); }
+
+    /* ─── DIALOGS ─── */
+    .dlg-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.6);
+      z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity .2s;
+    }
+    .dlg-overlay.open { opacity:1; pointer-events:all; }
+
+    .dlg {
+      background: #2c2c2e; border-radius: 20px;
+      padding: 28px 24px 20px;
+      width: calc(100% - 48px); max-width: 320px;
+      transform: scale(.88);
+      transition: transform .22s cubic-bezier(.34,1.56,.64,1);
+    }
+    .dlg-overlay.open .dlg { transform: scale(1); }
+
+    .dlg-title { font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 10px; }
+    .dlg-msg { font-size: 13px; color: var(--muted); text-align: center; line-height: 1.7; margin-bottom: 24px; }
+    .dlg-row { display: flex; gap: 10px; }
+    .dlg-btn {
+      flex: 1; padding: 13px; border-radius: 12px; border: none;
+      font-family: var(--font); font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: opacity .15s;
+    }
+    .dlg-btn:active { opacity: .75; }
+    .dlg-cancel  { background: rgba(255,255,255,.1); color: white; }
+    .dlg-confirm { background: white; color: #1c1c1e; }
+    .dlg-danger  { background: var(--danger); color: white; }
+  </style>
+</head>
+<body>
+
+<!-- ── Start (tap to begin) ── -->
+<div id="s-start" class="screen">
+  <span class="material-symbols-rounded" style="font-size:64px;opacity:.7;margin-bottom:28px;font-variation-settings:'FILL' 0,'wght' 200,'GRAD' 0,'opsz' 48;">explore</span>
+  <div style="font-size:26px;font-weight:700;margin-bottom:12px;">どこかへ</div>
+  <div style="font-size:14px;color:var(--muted);line-height:1.9;text-align:center;padding:0 40px;margin-bottom:48px;">目的地はたどり着くまで秘密。<br>近くの公開スポットがランダムに選ばれます。</div>
+  <button id="start-btn" onclick="startApp()" style="background:white;color:#1c1c1e;border:none;border-radius:50px;padding:16px 52px;font-family:var(--font);font-size:17px;font-weight:700;cursor:pointer;letter-spacing:.04em;">はじめる</button>
+</div>
+
+<!-- ── Loading ── -->
+<div id="s-loading" class="screen hidden">
+  <div class="spin-ring"></div>
+  <div class="loading-txt">現在地を取得中…</div>
+</div>
+
+<!-- ── Navigation ── -->
+<div id="s-nav" class="screen hidden">
+  <div class="arrow-wrap">
+    <span class="material-symbols-rounded" id="nav-arrow">north</span>
+  </div>
+  <div class="dist-wrap">
+    <div class="dist-row">
+      <span class="dist-num" id="dist-num">--</span>
+      <span class="dist-unit" id="dist-unit">km</span>
+    </div>
+    <div class="dist-label" id="dist-lbl">前方</div>
+  </div>
+  <div class="compass-hint" id="compass-hint"></div>
+</div>
+
+<!-- ── Arrival ── -->
+<div id="s-arrival" class="screen hidden">
+  <span class="material-symbols-rounded arrival-pin">location_on</span>
+  <div class="arrival-lbl">到着</div>
+  <div class="arrival-name" id="arr-name">--</div>
+  <div class="arrival-dist-row">
+    <span>↑</span>
+    <span id="arr-dist">--</span>
+  </div>
+  <button class="next-btn" onclick="goNext()">次の場所へ</button>
+</div>
+
+<!-- ── Error ── -->
+<div id="s-error" class="screen hidden">
+  <span class="material-symbols-rounded err-icon">wifi_off</span>
+  <div class="err-title">位置情報を取得できません</div>
+  <div class="err-msg">設定アプリからこのブラウザの<br>位置情報アクセスを許可してください。</div>
+  <button class="retry-btn" onclick="startApp()">再試行</button>
+</div>
+
+<!-- ── Controls ── -->
+<div id="controls">
+  <div class="ctrl-col">
+    <button class="cbtn off" id="btn-undo" onclick="confirmUndo()">
+      <span class="material-symbols-rounded">undo</span>
+    </button>
+    <button class="cbtn" id="btn-skip" onclick="confirmSkip()">
+      <span class="material-symbols-rounded">close</span>
+    </button>
+  </div>
+  <button class="cbtn" onclick="openMenu()">
+    <span class="material-symbols-rounded">more_horiz</span>
+  </button>
+</div>
+
+<!-- ── Menu ── -->
+<div id="menu-overlay" onclick="closeMenu()"></div>
+<div id="menu-panel">
+  <div class="menu-head">
+    <div class="menu-title-txt">メニュー</div>
+    <button class="menu-close-btn" onclick="closeMenu()">
+      <span class="material-symbols-rounded" style="font-size:17px">close</span>
+    </button>
+  </div>
+  <div class="menu-tabs">
+    <button class="mtab active" id="tab-hist" onclick="switchTab('hist')">到着リスト</button>
+    <button class="mtab" id="tab-sett" onclick="switchTab('sett')">設定</button>
+  </div>
+  <div class="menu-body" id="menu-body"></div>
+</div>
+
+<!-- ── Skip Dialog ── -->
+<div class="dlg-overlay" id="dlg-skip">
+  <div class="dlg">
+    <div class="dlg-title">この場所をスキップ</div>
+    <div class="dlg-msg">この場所はスキップされ、次の場所が新しく選ばれます。</div>
+    <div class="dlg-row">
+      <button class="dlg-btn dlg-cancel"  onclick="closeDlg('dlg-skip')">やめる</button>
+      <button class="dlg-btn dlg-danger"  onclick="doSkip()">スキップ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Undo Dialog ── -->
+<div class="dlg-overlay" id="dlg-undo">
+  <div class="dlg">
+    <div class="dlg-title">スキップを取り消す</div>
+    <div class="dlg-msg">直前にスキップした場所を<br>もう一度目的地に設定します。</div>
+    <div class="dlg-row">
+      <button class="dlg-btn dlg-cancel"  onclick="closeDlg('dlg-undo')">やめる</button>
+      <button class="dlg-btn dlg-confirm" onclick="doUndo()">取り消す</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+//  STATIC FALLBACK (Overpass失敗時)
+// ═══════════════════════════════════════
+const FALLBACK_PLACES = [
+  // 北海道
+  { name:"大通公園",                   lat:43.0604, lng:141.3530, cat:"公園" },
+  { name:"札幌時計台",                 lat:43.0644, lng:141.3534, cat:"史跡" },
+  { name:"北海道庁旧本庁舎",           lat:43.0641, lng:141.3488, cat:"史跡" },
+  { name:"円山公園",                   lat:43.0572, lng:141.3174, cat:"公園" },
+  { name:"北海道神宮",                 lat:43.0534, lng:141.3196, cat:"神社" },
+  { name:"藻岩山山頂展望台",           lat:43.0181, lng:141.3298, cat:"展望台" },
+  { name:"小樽運河",                   lat:43.1977, lng:140.9934, cat:"史跡" },
+  { name:"函館山展望台",               lat:41.7580, lng:140.6956, cat:"展望台" },
+  { name:"五稜郭公園",                 lat:41.7965, lng:140.7566, cat:"公園" },
+  { name:"旭山動物園",                 lat:43.7706, lng:142.4797, cat:"施設" },
+  { name:"富良野　紫竹ガーデン",       lat:43.3455, lng:142.3755, cat:"公園" },
+  { name:"美瑛　青い池",               lat:43.4637, lng:142.6153, cat:"自然" },
+  { name:"知床五湖",                   lat:44.0769, lng:145.0023, cat:"自然" },
+  { name:"摩周湖展望台",               lat:43.5766, lng:144.5310, cat:"自然" },
+  { name:"阿寒湖畔",                   lat:43.4430, lng:144.1053, cat:"自然" },
+  { name:"釧路湿原展望台",             lat:43.1530, lng:144.3650, cat:"自然" },
+  { name:"登別温泉　地獄谷",           lat:42.4497, lng:141.1049, cat:"自然" },
+  { name:"洞爺湖展望台",               lat:42.5595, lng:140.7724, cat:"自然" },
+  // 青森
+  { name:"弘前城",                     lat:40.6073, lng:140.4634, cat:"史跡" },
+  { name:"三内丸山遺跡",               lat:40.7029, lng:140.6953, cat:"史跡" },
+  { name:"奥入瀬渓流",                 lat:40.5449, lng:140.9419, cat:"自然" },
+  { name:"十和田湖",                   lat:40.4657, lng:140.8844, cat:"自然" },
+  // 岩手
+  { name:"中尊寺",                     lat:38.9886, lng:141.1024, cat:"寺社" },
+  { name:"盛岡城跡公園",               lat:39.7014, lng:141.1537, cat:"公園" },
+  { name:"猊鼻渓",                     lat:39.0247, lng:141.4219, cat:"自然" },
+  // 宮城
+  { name:"松島海岸",                   lat:38.3679, lng:141.0695, cat:"自然" },
+  { name:"仙台城跡（青葉城）",         lat:38.2529, lng:140.8580, cat:"史跡" },
+  { name:"瑞巌寺",                     lat:38.3687, lng:141.0694, cat:"寺社" },
+  { name:"仙台うみの杜水族館",         lat:38.2838, lng:141.0205, cat:"施設" },
+  // 秋田
+  { name:"角館武家屋敷通り",           lat:39.5990, lng:140.5594, cat:"史跡" },
+  { name:"田沢湖",                     lat:39.7175, lng:140.6599, cat:"自然" },
+  // 山形
+  { name:"山寺（立石寺）",             lat:38.3124, lng:140.4410, cat:"寺社" },
+  { name:"銀山温泉",                   lat:38.6286, lng:140.5500, cat:"史跡" },
+  // 福島
+  { name:"鶴ヶ城",                     lat:37.4940, lng:139.9302, cat:"史跡" },
+  { name:"塔のへつり",                 lat:37.1840, lng:139.8768, cat:"自然" },
+  // 茨城
+  { name:"偕楽園",                     lat:36.3617, lng:140.4463, cat:"公園" },
+  { name:"弘道館",                     lat:36.3701, lng:140.4714, cat:"史跡" },
+  { name:"千波湖公園",                 lat:36.3560, lng:140.4498, cat:"公園" },
+  { name:"国営ひたち海浜公園",         lat:36.3915, lng:140.5955, cat:"公園" },
+  { name:"大洗磯前神社",               lat:36.3142, lng:140.5764, cat:"神社" },
+  { name:"鹿島神宮",                   lat:35.9680, lng:140.6325, cat:"神社" },
+  { name:"笠間稲荷神社",               lat:36.3811, lng:140.3051, cat:"神社" },
+  { name:"御岩神社",                   lat:36.5230, lng:140.5710, cat:"神社" },
+  { name:"袋田の滝",                   lat:36.6493, lng:140.4036, cat:"自然" },
+  // 栃木
+  { name:"日光東照宮",                 lat:36.7582, lng:139.5993, cat:"寺社" },
+  { name:"華厳の滝",                   lat:36.7395, lng:139.5197, cat:"自然" },
+  { name:"宇都宮二荒山神社",           lat:36.5588, lng:139.8839, cat:"神社" },
+  { name:"足利フラワーパーク",         lat:36.3248, lng:139.5104, cat:"公園" },
+  { name:"那須高原　茶臼岳",           lat:37.1111, lng:139.9699, cat:"自然" },
+  // 群馬
+  { name:"草津温泉　湯畑",             lat:36.6197, lng:138.5960, cat:"自然" },
+  { name:"富岡製糸場",                 lat:36.2537, lng:138.8893, cat:"史跡" },
+  { name:"吹割の滝",                   lat:36.7175, lng:139.2043, cat:"自然" },
+  // 埼玉
+  { name:"川越城本丸御殿",             lat:35.9240, lng:139.4840, cat:"史跡" },
+  { name:"時の鐘（川越）",             lat:35.9210, lng:139.4838, cat:"史跡" },
+  { name:"秩父神社",                   lat:35.9980, lng:139.0851, cat:"神社" },
+  { name:"三峯神社",                   lat:35.9815, lng:138.9413, cat:"神社" },
+  // 千葉
+  { name:"成田山新勝寺",               lat:35.7951, lng:140.3175, cat:"寺社" },
+  { name:"犬吠埼灯台",                 lat:35.7079, lng:140.8698, cat:"史跡" },
+  { name:"九十九里浜",                 lat:35.5847, lng:140.4564, cat:"自然" },
+  { name:"鋸山　地獄のぞき",           lat:35.1419, lng:139.8247, cat:"自然" },
+  { name:"銚子ポートタワー",           lat:35.7267, lng:140.8469, cat:"展望台" },
+  // 東京
+  { name:"浅草寺",                     lat:35.7148, lng:139.7967, cat:"寺社" },
+  { name:"東京スカイツリー展望台",     lat:35.7101, lng:139.8107, cat:"展望台" },
+  { name:"明治神宮",                   lat:35.6763, lng:139.6993, cat:"神社" },
+  { name:"上野公園",                   lat:35.7141, lng:139.7741, cat:"公園" },
+  { name:"新宿御苑",                   lat:35.6851, lng:139.7100, cat:"公園" },
+  { name:"皇居東御苑",                 lat:35.6851, lng:139.7594, cat:"公園" },
+  { name:"東京タワー",                 lat:35.6586, lng:139.7454, cat:"展望台" },
+  { name:"築地場外市場",               lat:35.6656, lng:139.7705, cat:"市場" },
+  { name:"東京国立博物館",             lat:35.7188, lng:139.7763, cat:"博物館" },
+  { name:"汐留　浜離宮",               lat:35.6591, lng:139.7627, cat:"公園" },
+  { name:"お台場海浜公園",             lat:35.6267, lng:139.7751, cat:"公園" },
+  { name:"高尾山",                     lat:35.6256, lng:139.2437, cat:"自然" },
+  { name:"奥多摩湖",                   lat:35.7892, lng:139.0497, cat:"自然" },
+  { name:"国会議事堂",                 lat:35.6760, lng:139.7447, cat:"史跡" },
+  // 神奈川
+  { name:"鎌倉大仏",                   lat:35.3167, lng:139.5356, cat:"寺社" },
+  { name:"鶴岡八幡宮",                 lat:35.3258, lng:139.5566, cat:"神社" },
+  { name:"箱根大涌谷",                 lat:35.2406, lng:139.0215, cat:"自然" },
+  { name:"江の島",                     lat:35.2992, lng:139.4782, cat:"自然" },
+  { name:"横浜赤レンガ倉庫",           lat:35.4438, lng:139.6437, cat:"文化" },
+  { name:"三溪園",                     lat:35.4101, lng:139.6421, cat:"公園" },
+  { name:"横浜中華街",                 lat:35.4433, lng:139.6476, cat:"文化" },
+  // 新潟
+  { name:"佐渡　金山",                 lat:38.0525, lng:138.2484, cat:"史跡" },
+  { name:"越後妻有　大地の芸術祭",     lat:37.1333, lng:138.7667, cat:"文化" },
+  { name:"弥彦神社",                   lat:37.6947, lng:138.8321, cat:"神社" },
+  // 富山
+  { name:"立山黒部アルペンルート",     lat:36.5827, lng:137.6156, cat:"自然" },
+  { name:"富山城址公園",               lat:36.6971, lng:137.2128, cat:"公園" },
+  { name:"瑞龍寺",                     lat:36.7411, lng:136.9893, cat:"寺社" },
+  // 石川
+  { name:"兼六園",                     lat:36.5617, lng:136.6620, cat:"公園" },
+  { name:"金沢城公園",                 lat:36.5629, lng:136.6568, cat:"公園" },
+  { name:"東茶屋街",                   lat:36.5735, lng:136.6644, cat:"史跡" },
+  { name:"白米千枚田",                 lat:37.3540, lng:136.9186, cat:"自然" },
+  // 福井
+  { name:"永平寺",                     lat:36.0904, lng:136.5302, cat:"寺社" },
+  { name:"東尋坊",                     lat:36.2330, lng:136.1226, cat:"自然" },
+  { name:"一乗谷朝倉氏遺跡",           lat:36.0220, lng:136.3080, cat:"史跡" },
+  // 山梨
+  { name:"富士山五合目（河口湖口）",   lat:35.3614, lng:138.7315, cat:"自然" },
+  { name:"河口湖",                     lat:35.5078, lng:138.7599, cat:"自然" },
+  { name:"武田神社",                   lat:35.6673, lng:138.5726, cat:"神社" },
+  // 長野
+  { name:"善光寺",                     lat:36.6612, lng:138.1868, cat:"寺社" },
+  { name:"松本城",                     lat:36.2383, lng:137.9686, cat:"史跡" },
+  { name:"上高地",                     lat:36.2375, lng:137.6341, cat:"自然" },
+  { name:"白馬村",                     lat:36.6977, lng:137.8605, cat:"自然" },
+  { name:"諏訪大社上社本宮",           lat:35.9987, lng:138.1025, cat:"神社" },
+  // 岐阜
+  { name:"白川郷　荻町集落",           lat:36.2577, lng:136.9056, cat:"史跡" },
+  { name:"岐阜城",                     lat:35.4415, lng:136.7704, cat:"史跡" },
+  { name:"下呂温泉",                   lat:35.8089, lng:137.2455, cat:"自然" },
+  // 静岡
+  { name:"久能山東照宮",               lat:34.9495, lng:138.4487, cat:"寺社" },
+  { name:"三保の松原",                 lat:35.0181, lng:138.5168, cat:"自然" },
+  { name:"富士山本宮浅間大社",         lat:35.2270, lng:138.6165, cat:"神社" },
+  { name:"熱海城",                     lat:35.1104, lng:139.0760, cat:"史跡" },
+  { name:"寸又峡",                     lat:35.1524, lng:138.1199, cat:"自然" },
+  // 愛知
+  { name:"名古屋城",                   lat:35.1855, lng:136.8994, cat:"史跡" },
+  { name:"熱田神宮",                   lat:35.1271, lng:136.9084, cat:"神社" },
+  { name:"犬山城",                     lat:35.3835, lng:136.9445, cat:"史跡" },
+  { name:"トヨタ産業技術記念館",       lat:35.1803, lng:136.8799, cat:"博物館" },
+  // 三重
+  { name:"伊勢神宮（内宮）",           lat:34.4556, lng:136.7254, cat:"神社" },
+  { name:"伊勢神宮（外宮）",           lat:34.4879, lng:136.7073, cat:"神社" },
+  { name:"おかげ横丁",                 lat:34.4555, lng:136.7239, cat:"文化" },
+  { name:"鬼ヶ城",                     lat:33.8860, lng:136.1597, cat:"自然" },
+  // 滋賀
+  { name:"彦根城",                     lat:35.2762, lng:136.2516, cat:"史跡" },
+  { name:"琵琶湖テラス",               lat:35.0215, lng:135.9537, cat:"展望台" },
+  { name:"石山寺",                     lat:34.9697, lng:135.9117, cat:"寺社" },
+  // 京都
+  { name:"金閣寺",                     lat:35.0394, lng:135.7292, cat:"寺社" },
+  { name:"伏見稲荷大社",               lat:34.9671, lng:135.7727, cat:"神社" },
+  { name:"嵐山　渡月橋",               lat:35.0094, lng:135.6773, cat:"史跡" },
+  { name:"清水寺",                     lat:34.9948, lng:135.7850, cat:"寺社" },
+  { name:"祇園　白川",                 lat:35.0038, lng:135.7763, cat:"文化" },
+  { name:"二条城",                     lat:35.0142, lng:135.7481, cat:"史跡" },
+  { name:"銀閣寺",                     lat:35.0268, lng:135.7983, cat:"寺社" },
+  { name:"天橋立",                     lat:35.5547, lng:135.1818, cat:"自然" },
+  // 大阪
+  { name:"大阪城公園",                 lat:34.6873, lng:135.5259, cat:"公園" },
+  { name:"通天閣",                     lat:34.6523, lng:135.5063, cat:"展望台" },
+  { name:"道頓堀",                     lat:34.6687, lng:135.5014, cat:"文化" },
+  { name:"住吉大社",                   lat:34.6122, lng:135.4930, cat:"神社" },
+  { name:"万博記念公園",               lat:34.8100, lng:135.5381, cat:"公園" },
+  { name:"天王寺公園",                 lat:34.6485, lng:135.5065, cat:"公園" },
+  // 兵庫
+  { name:"姫路城",                     lat:34.8394, lng:134.6939, cat:"史跡" },
+  { name:"有馬温泉　金の湯前",         lat:34.7991, lng:135.2488, cat:"自然" },
+  { name:"城崎温泉　外湯めぐり",       lat:35.6261, lng:134.8118, cat:"文化" },
+  { name:"淡路島　明石海峡公園",       lat:34.5227, lng:134.9207, cat:"公園" },
+  // 奈良
+  { name:"東大寺（大仏殿）",           lat:34.6889, lng:135.8399, cat:"寺社" },
+  { name:"春日大社",                   lat:34.6813, lng:135.8482, cat:"神社" },
+  { name:"奈良公園",                   lat:34.6850, lng:135.8328, cat:"公園" },
+  { name:"法隆寺",                     lat:34.6142, lng:135.7341, cat:"寺社" },
+  // 和歌山
+  { name:"高野山　奥の院",             lat:34.2139, lng:135.5929, cat:"寺社" },
+  { name:"那智の滝",                   lat:33.6708, lng:135.8905, cat:"自然" },
+  { name:"熊野大社（本宮）",           lat:33.8458, lng:135.7957, cat:"神社" },
+  { name:"白浜　三段壁",               lat:33.6659, lng:135.3437, cat:"自然" },
+  // 鳥取
+  { name:"鳥取砂丘",                   lat:35.5398, lng:134.2261, cat:"自然" },
+  { name:"水木しげるロード",           lat:35.4912, lng:133.2289, cat:"文化" },
+  // 島根
+  { name:"出雲大社",                   lat:35.4013, lng:132.6851, cat:"神社" },
+  { name:"足立美術館",                 lat:35.3691, lng:133.1853, cat:"博物館" },
+  { name:"石見銀山",                   lat:35.1017, lng:132.4369, cat:"史跡" },
+  // 岡山
+  { name:"後楽園",                     lat:34.6680, lng:133.9352, cat:"公園" },
+  { name:"岡山城",                     lat:34.6652, lng:133.9358, cat:"史跡" },
+  { name:"倉敷美観地区",               lat:34.5952, lng:133.7730, cat:"史跡" },
+  // 広島
+  { name:"厳島神社",                   lat:34.2964, lng:132.3193, cat:"神社" },
+  { name:"原爆ドーム",                 lat:34.3955, lng:132.4536, cat:"史跡" },
+  { name:"平和記念公園",               lat:34.3940, lng:132.4527, cat:"公園" },
+  { name:"三段峡",                     lat:34.6148, lng:132.0640, cat:"自然" },
+  // 山口
+  { name:"錦帯橋",                     lat:34.1547, lng:132.1699, cat:"史跡" },
+  { name:"秋吉台",                     lat:34.2358, lng:131.3120, cat:"自然" },
+  { name:"角島大橋",                   lat:34.3563, lng:130.8753, cat:"自然" },
+  // 徳島
+  { name:"鳴門の渦潮",                 lat:34.2449, lng:134.6537, cat:"自然" },
+  { name:"祖谷のかずら橋",             lat:33.9017, lng:133.8879, cat:"史跡" },
+  // 香川
+  { name:"金刀比羅宮",                 lat:34.1821, lng:133.8196, cat:"神社" },
+  { name:"栗林公園",                   lat:34.3317, lng:134.0611, cat:"公園" },
+  { name:"直島　地中美術館周辺",       lat:34.4631, lng:133.9981, cat:"文化" },
+  // 愛媛
+  { name:"松山城",                     lat:33.8450, lng:132.7659, cat:"史跡" },
+  { name:"道後温泉本館",               lat:33.8516, lng:132.7866, cat:"自然" },
+  { name:"宇和島城",                   lat:33.2230, lng:132.5643, cat:"史跡" },
+  // 高知
+  { name:"桂浜",                       lat:33.4942, lng:133.5757, cat:"自然" },
+  { name:"高知城",                     lat:33.5609, lng:133.5315, cat:"史跡" },
+  { name:"四万十川　沈下橋",           lat:33.2147, lng:132.9716, cat:"自然" },
+  // 福岡
+  { name:"太宰府天満宮",               lat:33.5216, lng:130.5353, cat:"神社" },
+  { name:"福岡城跡（舞鶴公園）",       lat:33.5895, lng:130.3893, cat:"公園" },
+  { name:"博多祇園山笠　飾り山",       lat:33.5897, lng:130.4180, cat:"文化" },
+  { name:"門司港レトロ",               lat:33.9443, lng:130.9661, cat:"史跡" },
+  { name:"糸島　二見ヶ浦",             lat:33.5710, lng:130.1869, cat:"自然" },
+  // 佐賀
+  { name:"吉野ヶ里歴史公園",           lat:33.3235, lng:130.3984, cat:"史跡" },
+  { name:"唐津城",                     lat:33.4515, lng:129.9683, cat:"史跡" },
+  { name:"有田陶磁の里",               lat:33.2083, lng:129.8718, cat:"文化" },
+  // 長崎
+  { name:"グラバー園",                 lat:32.7351, lng:129.8705, cat:"史跡" },
+  { name:"軍艦島（端島）上陸クルーズ乗り場",lat:32.7504,lng:129.8655,cat:"史跡"},
+  { name:"平和公園",                   lat:32.7786, lng:129.8680, cat:"公園" },
+  { name:"ハウステンボス",             lat:33.0933, lng:129.9200, cat:"施設" },
+  // 熊本
+  { name:"熊本城",                     lat:32.8059, lng:130.7057, cat:"史跡" },
+  { name:"水前寺成趣園",               lat:32.7893, lng:130.7230, cat:"公園" },
+  { name:"阿蘇大観峰",                 lat:32.9763, lng:131.1200, cat:"自然" },
+  // 大分
+  { name:"別府地獄めぐり（海地獄）",   lat:33.3036, lng:131.4985, cat:"自然" },
+  { name:"由布院温泉　湯の坪街道",     lat:33.2660, lng:131.3635, cat:"文化" },
+  { name:"国東半島　富貴寺",           lat:33.5434, lng:131.5633, cat:"寺社" },
+  // 宮崎
+  { name:"高千穂峡",                   lat:32.7140, lng:131.3082, cat:"自然" },
+  { name:"宮崎神宮",                   lat:31.9375, lng:131.4274, cat:"神社" },
+  { name:"青島神社",                   lat:31.8549, lng:131.4736, cat:"神社" },
+  // 鹿児島
+  { name:"桜島展望台（湯之平）",       lat:31.5929, lng:130.6620, cat:"自然" },
+  { name:"仙巌園",                     lat:31.6235, lng:130.5984, cat:"公園" },
+  { name:"知覧特攻平和会館",           lat:31.3686, lng:130.4476, cat:"博物館" },
+  { name:"屋久島　白谷雲水峡",         lat:30.3866, lng:130.5290, cat:"自然" },
+  // 沖縄
+  { name:"首里城公園",                 lat:26.2172, lng:127.7197, cat:"史跡" },
+  { name:"万座毛",                     lat:26.5021, lng:127.8580, cat:"自然" },
+  { name:"古宇利島大橋",               lat:26.6557, lng:128.0418, cat:"自然" },
+  { name:"美ら海水族館",               lat:26.6940, lng:127.8784, cat:"施設" },
+  { name:"斎場御嶽",                   lat:26.1288, lng:127.8009, cat:"史跡" },
+  { name:"波上宮",                     lat:26.2245, lng:127.6748, cat:"神社" },
+];
+
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+let S = {
+  target:      null,
+  lat:         null,
+  lng:         null,
+  heading:     null,
+  compassOn:   false,
+  pool:        [],        // Overpassから取得したスポット一覧
+  poolLat:     null,      // pool取得時の緯度
+  poolLng:     null,      // pool取得時の経度
+  poolTime:    0,         // pool取得時刻 (ms)
+  skipStack:   [],
+  visited:     [],
+  arrivedFlag: false,
+  watchId:     null,
+  activeTab:   'hist',
+};
+
+const POOL_TTL    = 12 * 3600 * 1000; // 12時間キャッシュ
+const POOL_RADIUS = 150000;           // 150km
+const POOL_MIN    = 30;               // プールが少なくなったら再取得
+
+// ═══════════════════════════════════════
+//  PERSIST
+// ═══════════════════════════════════════
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem('dokoka_v2') || '{}');
+    S.visited   = d.visited   || [];
+    S.skipStack = d.skipStack || [];
+    S.target    = d.target    || null;
+    // プールキャッシュ復元
+    if(d.pool && d.poolTime && Date.now() - d.poolTime < POOL_TTL){
+      S.pool     = d.pool;
+      S.poolLat  = d.poolLat;
+      S.poolLng  = d.poolLng;
+      S.poolTime = d.poolTime;
+    }
+  } catch(e){}
+}
+function save() {
+  try {
+    localStorage.setItem('dokoka_v2', JSON.stringify({
+      visited:   S.visited,
+      skipStack: S.skipStack,
+      target:    S.target,
+      pool:      S.pool,
+      poolLat:   S.poolLat,
+      poolLng:   S.poolLng,
+      poolTime:  S.poolTime,
+    }));
+  } catch(e){}
+}
+
+// ═══════════════════════════════════════
+//  GEO MATH
+// ═══════════════════════════════════════
+function rad(d){ return d * Math.PI / 180; }
+
+function haversine(a,b,c,d){
+  const R=6371000, dL=rad(c-a), dG=rad(d-b);
+  const x=Math.sin(dL/2)**2+Math.cos(rad(a))*Math.cos(rad(c))*Math.sin(dG/2)**2;
+  return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+}
+
+function bearingTo(a,b,c,d){
+  const y=Math.sin(rad(d-b))*Math.cos(rad(c));
+  const x=Math.cos(rad(a))*Math.sin(rad(c))-Math.sin(rad(a))*Math.cos(rad(c))*Math.cos(rad(d-b));
+  return(Math.atan2(y,x)*180/Math.PI+360)%360;
+}
+
+function relDirText(relAngle){
+  const a = ((relAngle % 360) + 360) % 360;
+  const n = a > 180 ? a - 360 : a;
+  if(n >= -45  && n <  45)  return '前方';
+  if(n >=  45  && n < 135)  return '右側';
+  if(n >= -135 && n < -45)  return '左側';
+  return '後方';
+}
+
+function fmtDist(m){
+  if(m<1000) return{v:String(Math.round(m)),u:'m'};
+  return{v:(m/1000).toFixed(1),u:'km'};
+}
+
+// ═══════════════════════════════════════
+//  OVERPASS API
+// ═══════════════════════════════════════
+function catFromTags(t){
+  if(t.tourism==='museum'||t.tourism==='gallery') return '博物館';
+  if(t.tourism==='viewpoint')     return '展望台';
+  if(t.tourism==='zoo'||t.tourism==='aquarium'||t.tourism==='theme_park') return '施設';
+  if(t.tourism==='attraction')    return '観光';
+  if(t.historic==='castle')       return '城';
+  if(t.historic)                  return '史跡';
+  if(t.leisure==='park')          return '公園';
+  if(t.leisure==='garden')        return '庭園';
+  if(t.leisure==='nature_reserve')return '自然';
+  if(t.amenity==='place_of_worship'){
+    if(t.religion==='shinto') return '神社';
+    if(t.religion==='buddhist') return 'お寺';
+    return '寺社';
+  }
+  if(t.natural==='peak')          return '山';
+  if(t.natural==='waterfall')     return '滝';
+  if(t.natural==='beach')         return '海岸';
+  if(t.natural==='hot_spring')    return '温泉';
+  return 'スポット';
+}
+
+// 日本語文字を含むか
+const JA_RE = /[\u3000-\u9fff\uff00-\uffef]/;
+
+async function fetchFromOverpass(lat, lng) {
+  const r = POOL_RADIUS;
+  const q = `[out:json][timeout:30];
+(
+  node["tourism"~"attraction|museum|viewpoint|zoo|theme_park|aquarium|gallery"]["name"](around:${r},${lat},${lng});
+  node["historic"]["name"](around:${r},${lat},${lng});
+  node["leisure"~"park|garden|nature_reserve"]["name"](around:${r},${lat},${lng});
+  node["amenity"="place_of_worship"]["name"](around:${r},${lat},${lng});
+  node["natural"~"peak|waterfall|beach|hot_spring|cave_entrance|spring"]["name"](around:${r},${lat},${lng});
+  way["tourism"~"attraction|museum|viewpoint|zoo|theme_park|aquarium"]["name"](around:${r},${lat},${lng});
+  way["historic"]["name"](around:${r},${lat},${lng});
+  way["leisure"~"park|garden|nature_reserve"]["name"](around:${r},${lat},${lng});
+  way["amenity"="place_of_worship"]["name"](around:${r},${lat},${lng});
+  relation["leisure"~"park|garden|nature_reserve"]["name"](around:${r},${lat},${lng});
+  relation["historic"]["name"](around:${r},${lat},${lng});
+);
+out center;`;
+
+  const res = await fetch('https://overpass-api.de/api/interpreter', {
+    method: 'POST',
+    headers: {'Content-Type':'application/x-www-form-urlencoded'},
+    body: 'data=' + encodeURIComponent(q),
+  });
+  if(!res.ok) throw new Error('Overpass error: ' + res.status);
+  const json = await res.json();
+
+  const seen = new Set();
+  const places = [];
+  for(const e of json.elements){
+    const name = e.tags?.name;
+    if(!name || !JA_RE.test(name)) continue;
+    if(seen.has(name)) continue;
+    seen.add(name);
+    const elat = e.lat ?? e.center?.lat;
+    const elng = e.lon ?? e.center?.lon;
+    if(!elat || !elng) continue;
+    places.push({ name, lat: elat, lng: elng, cat: catFromTags(e.tags||{}) });
+  }
+  return places;
+}
+
+async function ensurePool() {
+  // キャッシュが有効か確認
+  const cacheOk = S.pool.length >= POOL_MIN
+    && S.poolTime > 0
+    && Date.now() - S.poolTime < POOL_TTL
+    && S.poolLat !== null
+    && haversine(S.lat, S.lng, S.poolLat, S.poolLng) < POOL_RADIUS * 0.5;
+
+  if(cacheOk) return true;
+
+  setLoadingText('スポットを検索中…');
+  try {
+    const places = await fetchFromOverpass(S.lat, S.lng);
+    if(places.length > 0){
+      S.pool     = places;
+      S.poolLat  = S.lat;
+      S.poolLng  = S.lng;
+      S.poolTime = Date.now();
+      save();
+      setLoadingText(`${places.length.toLocaleString()}件のスポットを発見`);
+      return true;
+    }
+  } catch(err){
+    console.warn('Overpass failed, using fallback:', err);
+  }
+  // フォールバック
+  if(S.pool.length === 0){
+    S.pool = [...FALLBACK_PLACES];
+    S.poolTime = Date.now();
+  }
+  return false;
+}
+
+function setLoadingText(t){
+  const el = document.querySelector('.loading-txt');
+  if(el) el.textContent = t;
+}
+
+// ═══════════════════════════════════════
+//  TARGET SELECTION  (distance-weighted)
+// ═══════════════════════════════════════
+function usedNames(){
+  return new Set([...S.visited.map(v=>v.name), ...S.skipStack.map(s=>s.name)]);
+}
+
+function pickFromPool(){
+  const used = usedNames();
+  let pool = S.pool.filter(p=>!used.has(p.name));
+  // 全部使い切ったら到着リストのみリセット
+  if(pool.length === 0){ S.visited=[]; save(); pool = S.pool.filter(p=>!new Set(S.skipStack.map(s=>s.name)).has(p.name)); }
+  if(pool.length === 0){ pool = [...S.pool]; }
+
+  // weight ∝ 1 / (km^0.7 + 0.5)  近いほど高確率、遠くてもゼロにならない
+  const weighted = pool.map(p=>{
+    const km = haversine(S.lat, S.lng, p.lat, p.lng) / 1000;
+    return { ...p, w: 1 / (Math.pow(km, 0.7) + 0.5) };
+  });
+  const tot = weighted.reduce((s,p)=>s+p.w, 0);
+  let r = Math.random() * tot;
+  for(const p of weighted){ r -= p.w; if(r <= 0) return p; }
+  return weighted[0];
+}
+
+// ═══════════════════════════════════════
+//  COMPASS
+// ═══════════════════════════════════════
+function initCompass(){
+  if(!window.DeviceOrientationEvent) return;
+
+  const handle = e=>{
+    if(e.webkitCompassHeading!=null){
+      S.heading = e.webkitCompassHeading; S.compassOn=true;
+    } else if(e.absolute && e.alpha!=null){
+      S.heading = (360-e.alpha+360)%360; S.compassOn=true;
+    }
+  };
+
+  if(typeof DeviceOrientationEvent.requestPermission==='function'){
+    document.addEventListener('touchstart', async ()=>{
+      try{
+        if(await DeviceOrientationEvent.requestPermission()==='granted'){
+          window.addEventListener('deviceorientation',handle,true);
+        }
+      }catch(e){}
+    },{once:true,passive:true});
+  } else {
+    window.addEventListener('deviceorientationabsolute',handle,true);
+    window.addEventListener('deviceorientation',handle,true);
+  }
+}
+
+// ═══════════════════════════════════════
+//  UI
+// ═══════════════════════════════════════
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
+  const el = document.getElementById('s-'+name);
+  if(el){ el.classList.remove('hidden'); }
+  document.getElementById('controls').style.visibility =
+    (name==='nav') ? 'visible' : 'hidden';
+}
+
+function refreshNav(){
+  if(!S.target || S.lat===null) return;
+
+  const dist = haversine(S.lat,S.lng,S.target.lat,S.target.lng);
+  const bear = bearingTo(S.lat,S.lng,S.target.lat,S.target.lng);
+
+  const{v,u} = fmtDist(dist);
+  document.getElementById('dist-num').textContent = v;
+  document.getElementById('dist-unit').textContent = u;
+
+  let rotation, label, hint='';
+  if(S.compassOn && S.heading!=null){
+    const rel = bear - S.heading;
+    rotation = rel;
+    label = relDirText(rel);
+  } else {
+    rotation = bear;
+    label = '前方';
+    hint = 'コンパス未使用（北が上）';
+  }
+
+  document.getElementById('nav-arrow').style.transform = `rotate(${rotation}deg)`;
+  document.getElementById('dist-lbl').textContent = label;
+  document.getElementById('compass-hint').textContent = hint;
+}
+
+function checkArrival(){
+  if(!S.target || S.lat===null || S.arrivedFlag) return;
+  const d = haversine(S.lat,S.lng,S.target.lat,S.target.lng);
+  if(d <= 50){
+    S.arrivedFlag = true;
+    doArrival(d);
+  }
+}
+
+function doArrival(dist){
+  const{v,u} = fmtDist(dist);
+  document.getElementById('arr-name').textContent = S.target.name;
+  document.getElementById('arr-dist').textContent = v+u;
+  S.visited.unshift({
+    name: S.target.name,
+    dist: Math.round(dist),
+    time: new Date().toLocaleString('ja-JP',{month:'numeric',day:'numeric',
+          hour:'2-digit',minute:'2-digit'}),
+  });
+  S.target = null;
+  save();
+  showScreen('arrival');
+}
+
+async function goNext(){
+  S.arrivedFlag = false;
+  // プールが少なければ再取得
+  const used = usedNames();
+  const remaining = S.pool.filter(p=>!used.has(p.name)).length;
+  if(remaining < POOL_MIN && S.lat !== null){
+    showScreen('loading');
+    await ensurePool();
+  }
+  S.target = pickFromPool();
+  save();
+  showScreen('nav');
+  refreshNav();
+}
+
+// ─── skip / undo ───
+function confirmSkip(){ openDlg('dlg-skip'); }
+function confirmUndo(){
+  if(!S.skipStack.length) return;
+  openDlg('dlg-undo');
+}
+
+async function doSkip(){
+  closeDlg('dlg-skip');
+  if(S.target) S.skipStack.push(S.target);
+  S.arrivedFlag = false;
+  const used = usedNames();
+  const remaining = S.pool.filter(p=>!used.has(p.name)).length;
+  if(remaining < POOL_MIN && S.lat !== null){
+    showScreen('loading');
+    await ensurePool();
+    showScreen('nav');
+  }
+  S.target = pickFromPool();
+  save();
+  refreshNav();
+  syncUndoBtn();
+}
+
+function doUndo(){
+  closeDlg('dlg-undo');
+  if(!S.skipStack.length) return;
+  S.target = S.skipStack.pop();
+  S.arrivedFlag = false;
+  save();
+  refreshNav();
+  syncUndoBtn();
+}
+
+function syncUndoBtn(){
+  document.getElementById('btn-undo').classList.toggle('off', !S.skipStack.length);
+}
+
+// ─── menu ───
+function openMenu(){
+  document.getElementById('menu-overlay').classList.add('open');
+  document.getElementById('menu-panel').classList.add('open');
+  renderMenu();
+}
+function closeMenu(){
+  document.getElementById('menu-overlay').classList.remove('open');
+  document.getElementById('menu-panel').classList.remove('open');
+}
+function switchTab(t){
+  S.activeTab=t;
+  document.querySelectorAll('.mtab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  renderMenu();
+}
+function renderMenu(){
+  const body = document.getElementById('menu-body');
+  const poolCount = S.pool.length;
+  if(S.activeTab==='hist'){
+    if(!S.visited.length){
+      body.innerHTML = `<div class="empty-box"><span class="empty-emoji">🗺️</span>まだ到着した場所はありません。<br>最初の目的地に向かいましょう！</div>`;
+    } else {
+      body.innerHTML = S.visited.map(v=>`
+        <div class="hist-item">
+          <span class="material-symbols-rounded hist-icon">check_circle</span>
+          <div>
+            <div class="hist-name">${v.name}</div>
+            <div class="hist-meta">${v.time}　到着時 ${v.dist}m</div>
+          </div>
+        </div>`).join('');
+    }
+  } else {
+    body.innerHTML = `
+      <div class="sett-row">
+        <div class="sett-lbl">到着判定の半径</div>
+        <div class="sett-val">50m（固定）</div>
+      </div>
+      <div class="sett-row">
+        <div class="sett-lbl">読み込み済みスポット数</div>
+        <div class="sett-val">${poolCount.toLocaleString()}件</div>
+      </div>
+      <div class="sett-row">
+        <div class="sett-lbl">スポットを再取得</div>
+        <button class="danger-btn" style="background:rgba(255,255,255,.1);color:white;" onclick="closeMenu();refetchPool()">現在地周辺を再検索する</button>
+      </div>
+      <div class="sett-row">
+        <div class="sett-lbl">到着リストをリセット</div>
+        <button class="danger-btn" onclick="resetHist()">リストを削除する</button>
+      </div>
+      <div class="sett-row">
+        <div class="sett-lbl">スキップ履歴を消去</div>
+        <button class="danger-btn" onclick="resetSkips()">スキップ履歴を削除する</button>
+      </div>`;
+  }
+}
+
+async function refetchPool(){
+  if(S.lat===null) return;
+  S.pool=[]; S.poolTime=0;
+  showScreen('loading');
+  await ensurePool();
+  showScreen('nav');
+}
+
+function resetHist(){
+  if(confirm('到着リストをすべて削除しますか？')){
+    S.visited=[]; save(); renderMenu();
+  }
+}
+function resetSkips(){
+  if(confirm('スキップ履歴を削除しますか？')){
+    S.skipStack=[]; save(); syncUndoBtn(); renderMenu();
+  }
+}
+
+// ─── dialogs ───
+function openDlg(id){ document.getElementById(id).classList.add('open'); }
+function closeDlg(id){ document.getElementById(id).classList.remove('open'); }
+
+// ═══════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════
+async function startApp(){
+  showScreen('loading');
+  setLoadingText('現在地を取得中…');
+  initCompass();
+
+  if(!navigator.geolocation){ showScreen('error'); return; }
+
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    S.lat = pos.coords.latitude;
+    S.lng = pos.coords.longitude;
+    // プール取得
+    await ensurePool();
+    // 既存ターゲットが無ければ新規選択
+    if(!S.target){ S.target = pickFromPool(); save(); }
+    showScreen('nav');
+    refreshNav();
+    startWatch();
+  }, ()=>{
+    showScreen('error');
+  }, {enableHighAccuracy:true, timeout:20000, maximumAge:0});
+}
+
+function init(){
+  load();
+  syncUndoBtn();
+  showScreen('start');
+}
+
+function startWatch(){
+  if(S.watchId!==null) return;
+  S.watchId = navigator.geolocation.watchPosition(pos=>{
+    S.lat = pos.coords.latitude;
+    S.lng = pos.coords.longitude;
+    refreshNav();
+    checkArrival();
+  }, null, {enableHighAccuracy:true, maximumAge:2000});
+}
+
+// Compass refresh loop
+function tick(){
+  if(!document.getElementById('s-nav').classList.contains('hidden')){
+    refreshNav();
+  }
+  requestAnimationFrame(tick);
+}
+
+init();
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
