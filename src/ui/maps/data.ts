@@ -18,6 +18,21 @@ export function getJapanMap() {
   return japan;
 }
 
+let japanDetail: { data: JapanMapData; regions: Region[]; guide: string } | null = null;
+
+/** 拡大表示用の細かい日本地図（同じ投影なので、粗い地図と同じ座標で扱える）。 */
+export function getJapanDetailMap() {
+  if (!japanDetail) {
+    const data = require('../../../assets/map/japan-detail.json') as JapanMapData;
+    japanDetail = {
+      data,
+      regions: data.prefs.map((p) => ({ id: String(p.code), d: p.d, label: p.name })),
+      guide: `M${data.inset.width} 0V${data.inset.height}H0`,
+    };
+  }
+  return japanDetail;
+}
+
 const muniCache = new Map<number, { data: MuniMapData; regions: Region[] }>();
 
 export function getMuniMap(prefCode: number, nameOf: (code: string) => string) {

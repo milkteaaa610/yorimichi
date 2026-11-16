@@ -37,6 +37,11 @@ function kindOf(name: string, ward: string): Municipality['kind'] {
   return 'village';
 }
 
+/** 「所属未定地」（埋め立て地など、どの市区町村にも属さない土地）のコード。 */
+export function isUnassigned(code: string | number | null | undefined): boolean {
+  return String(code ?? '').padStart(5, '0').endsWith('000');
+}
+
 export function loadMunicipalities(shp: string): Municipality[] {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ekilog-muni-'));
   const out = path.join(tmp, 'muni.csv');
@@ -44,6 +49,8 @@ export function loadMunicipalities(shp: string): Municipality[] {
   const rows = parseCsv(fs.readFileSync(out, 'utf8'));
   fs.rmSync(tmp, { recursive: true });
   return rows
+    // 「所属未定地」（コードが 000 で終わる）は市区町村ではないので外す
+    .filter((r) => !isUnassigned(r.N03_007))
     .map<Municipality>((r) => {
       const ward = r.N03_005 ?? '';
       const city = r.N03_004 ?? '';
@@ -86,7 +93,8 @@ export function assignMunicipalities(points: StationPoint[], shp: string): Map<s
 
   const result = new Map<string, string>();
   for (const f of joined.features) {
-    if (f.properties.N03_007) result.set(f.properties.id, String(f.properties.N03_007).padStart(5, '0'));
+    const code = f.properties.N03_007;
+    if (code && !isUnassigned(code)) result.set(f.properties.id, String(code).padStart(5, '0'));
   }
   const matched = points.filter((p) => result.has(p.id));
   for (const p of points) {

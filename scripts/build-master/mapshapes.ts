@@ -12,7 +12,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import { OUT_MAP_DIR, OUT_MUNI_INDEX } from './config';
-import { mapshaper } from './muni';
+import { isUnassigned, mapshaper } from './muni';
 import { type Coord } from './n02';
 
 type Ring = Coord[];
@@ -114,7 +114,15 @@ export type JapanMap = {
   prefs: { code: number; name: string; d: string; cx: number; cy: number }[];
 };
 
-function buildJapan(prefFile: string): JapanMap {
+type JapanFrame = {
+  main: { x0: number; y0: number; x1: number; y1: number };
+  nansei: { x0: number; y0: number; x1: number; y1: number };
+};
+
+/**
+ * 日本地図を作る。frame を渡すと同じ投影で描く（拡大表示用の細かい地図を、粗い地図とぴったり重ねるため）。
+ */
+function buildJapan(prefFile: string, frame?: JapanFrame): { map: JapanMap; frame: JapanFrame } {
   const feats = readFeatures(prefFile);
   type Part = { code: number; rings: Ring[]; nansei: boolean; area: number };
   const parts: Part[] = [];
@@ -145,8 +153,8 @@ function buildJapan(prefFile: string): JapanMap {
     }
     return { x0, y0, x1, y1 };
   };
-  const main = bboxOf(parts.filter((p) => !p.nansei));
-  const nansei = bboxOf(parts.filter((p) => p.nansei));
+  const main = frame?.main ?? bboxOf(parts.filter((p) => !p.nansei));
+  const nansei = frame?.nansei ?? bboxOf(parts.filter((p) => p.nansei));
   const pad = 14;
   const scale = (VIEW_W - pad * 2) / (main.x1 - main.x0);
   const height = Math.ceil((main.y1 - main.y0) * scale + pad * 2);
@@ -178,7 +186,7 @@ function buildJapan(prefFile: string): JapanMap {
       const [cx, cy] = proj([(b[0] + b[2]) / 2, (b[1] + b[3]) / 2]);
       return { code, name: names.get(code)!, d, cx: Math.round(cx), cy: Math.round(cy) };
     });
-  return { width: VIEW_W, height, inset, prefs };
+  return { map: { width: VIEW_W, height, inset, prefs }, frame: { main, nansei } };
 }
 
 // ───────── 市区町村の地図（都道府県ごと）─────────
@@ -259,7 +267,7 @@ function buildMuniMap(muniFeats: Feature[], view: Viewport): MuniMap {
         d: polys.map((poly) => ringsToPath(poly, project)).join(''),
       };
     })
-    .filter((m) => m.d !== '')
+    .filter((m) => m.d !== '' && !isUnassigned(m.code))
     .sort((a, b) => a.code.localeCompare(b.code));
   return { width, height, munis };
 }
@@ -303,10 +311,22 @@ export function buildMapShapes(
     '-o', 'precision=0.001', prefFile,
   ]);
 
+  // 4. 拡大表示用の細かい日本地図
+  const prefDetailFile = path.join(tmp, 'pref-detail.geojson');
+  mapshaper([
+    '-i', outlineFile,
+    '-simplify', 'interval=350',
+    '-filter-islands', 'min-area=4km2',
+    '-clean',
+    '-o', 'precision=0.0005', prefDetailFile,
+  ]);
+
   fs.mkdirSync(path.join(OUT_MAP_DIR, 'muni'), { recursive: true });
   const japan = buildJapan(prefFile);
-  const japanJson = JSON.stringify(japan);
+  const japanJson = JSON.stringify(japan.map);
   fs.writeFileSync(path.join(OUT_MAP_DIR, 'japan.json'), japanJson);
+  const detail = buildJapan(prefDetailFile, japan.frame);
+  fs.writeFileSync(path.join(OUT_MAP_DIR, 'japan-detail.json'), JSON.stringify(detail.map));
 
   const outlines = new Map(readFeatures(outlineFile).map((f) => [Number(f.properties.pref), f]));
   let muniBytes = 0;

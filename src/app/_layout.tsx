@@ -32,6 +32,7 @@ export default function RootLayout() {
               <Stack.Screen name="checkin" options={{ presentation: 'modal' }} />
               <Stack.Screen name="search" options={{ presentation: 'modal' }} />
               <Stack.Screen name="photo-import" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="map-view" options={{ presentation: 'fullScreenModal' }} />
             </Stack>
           )}
         </DbProvider>

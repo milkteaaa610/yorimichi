@@ -99,6 +99,7 @@ export default function MapScreen() {
                 selected={selected}
                 onSelect={(id) => setSelected((cur) => (cur === id ? null : id))}
                 guide={japan.guide}
+                label="都道府県ごとの訪問駅数を濃さで表した日本地図"
               />
               <Pressable
                 testID="map-expand"
