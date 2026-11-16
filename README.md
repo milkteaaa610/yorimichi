@@ -25,12 +25,25 @@ npm run web             # ブラウザで画面だけ確かめる
 Expo Go では動きません（バックグラウンドの位置情報と、同梱の SQLite を使うため）。開発ビルドで動かします。
 クラウドでビルドするなら `npx eas-cli@latest build --profile development` です。
 
+### Android の APK を作る
+
+```sh
+ANDROID_HOME=~/android-sdk JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 npm run build:apk
+# → dist/ekilog-1.0.0-arm64-v8a.apk（約45MB）
+```
+
+- JDK 17 と Android SDK（`platforms;android-37.0`、`build-tools;37.0.0`、`ndk;27.1.12297006`）が必要です。
+- 既定では arm64-v8a（いまの Android のほとんど）だけを入れます。古い 32bit の端末にも入れるなら `ARCHS=armeabi-v7a,arm64-v8a` を付けます。
+- 署名はデバッグ用の鍵なので、そのまま端末に入れて試せますが、ストアには出せません。ストアに出すときは自分の鍵か EAS Build を使います。
+- 端末に入れるには、APK を端末に送って開き、「提供元不明のアプリ」のインストールを許可します（`adb install dist/ekilog-1.0.0-arm64-v8a.apk` でも可）。
+
 | コマンド | 内容 |
 | --- | --- |
 | `npm run typecheck` | 型チェック |
 | `npm run lint` | lint |
 | `npm test` | 単体テスト（Jest） |
 | `npm run build:master` | 駅マスタを作り直す（`-- --map` で地図の形も） |
+| `npm run build:apk` | Android の APK を作る（下を参照） |
 | `npm run db:generate` | 記録DBのマイグレーションを作る |
 | `maestro test e2e/` | 画面の流れのテスト（端末かシミュレーターが必要） |
 
