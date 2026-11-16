@@ -12,7 +12,8 @@
     "lint": "expo lint",
     "test": "jest",
     "build:master": "tsx scripts/build-master/index.ts",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "build:apk": "scripts/build-apk.sh"
   },
   "dependencies": {
     "@expo-google-fonts/barlow": "^0.4.1",
