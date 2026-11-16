@@ -14,6 +14,8 @@ import { RegionIndex } from './hitTest';
 
 export type Region = { id: string; d: string; label: string };
 
+const COAST = '#CFCFCB';
+
 export type ViewBox = { x: number; y: number; w: number; h: number };
 
 type Props = {
@@ -35,6 +37,18 @@ type Props = {
 const Shapes = memo(function Shapes({ regions, fillOf }: Pick<Props, 'regions' | 'fillOf'>) {
   return (
     <G>
+      {/* 海岸線。塗りの下に太めの線を引き、内側の境界は上の塗りで隠れて、外側（海岸）だけが残る */}
+      {regions.map((r) => (
+        <Path
+          key={`coast-${r.id}`}
+          d={r.d}
+          fill="none"
+          stroke={COAST}
+          strokeWidth={1.6}
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      ))}
       {regions.map((r) => {
         const fill = fillOf(r.id);
         return (

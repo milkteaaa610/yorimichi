@@ -1,0 +1,17 @@
+# 設定の切り替え（docs/SPEC.md 9章）。「常に許可」を求める前に説明を出す。
+appId: app.ekilog
+---
+- launchApp:
+    clearState: true
+    permissions:
+      location: deny
+- tapOn:
+    id: tab-settings
+- tapOn: 自動チェックイン
+- assertVisible:
+    id: permission-explain
+- tapOn: 今はやめておく
+- tapOn:
+    id: open-sources
+- assertVisible: 国土数値情報（鉄道データ）
+- assertVisible: 国土数値情報（行政区域データ）

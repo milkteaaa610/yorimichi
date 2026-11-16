@@ -1,0 +1,34 @@
+# 検索 → 記録 → ホームに出る（docs/SPEC.md M2）。位置情報なし・機内モードでも記録できること。
+#   maestro test e2e/checkin.yaml
+appId: app.ekilog
+---
+- launchApp:
+    clearState: true
+    permissions:
+      location: deny
+- setAirplaneMode: enabled   # Android のみ。iOS では無視される
+- assertVisible:
+    id: home-screen
+- tapOn:
+    id: tab-checkin
+- assertVisible: 位置情報がオフのため.*
+- tapOn:
+    id: checkin-search
+- inputText: しんじゅく
+- tapOn:
+    id: result-新宿
+- tapOn: 乗り換え
+- tapOn:
+    id: checkin-submit
+- assertVisible:
+    id: recent-新宿
+- assertVisible: 乗り換え
+- assertVisible:
+    id: total-stations
+    text: '1'
+# 再起動しても残る
+- stopApp
+- launchApp
+- assertVisible:
+    id: recent-新宿
+- setAirplaneMode: disabled

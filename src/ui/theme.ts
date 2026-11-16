@@ -22,7 +22,7 @@ export const PREF_LEVELS = [
   { min: 30, bg: '#18181B', fg: '#FFFFFF', label: '30駅〜' },
   { min: 10, bg: '#9C9C97', fg: '#111113', label: '10–29' },
   { min: 1, bg: '#D6D6D2', fg: '#18181B', label: '1–9' },
-  { min: 0, bg: '#F0F0EE', fg: '#6B6B70', label: '0' },
+  { min: 0, bg: '#EDEDEA', fg: '#6B6B70', label: '0' },
 ] as const;
 
 /** 市区町村の塗り。 */

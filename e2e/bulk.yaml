@@ -1,0 +1,30 @@
+# 路線からまとめて登録（docs/SPEC.md 4.2）。選んだ瞬間にバーに反映され、登録後は「訪問済み」になる。
+appId: app.ekilog
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: tab-lines
+- tapOn:
+    id: line-山手線
+- tapOn:
+    id: bulk-toggle
+- tapOn:
+    id: line-station-東京
+- tapOn:
+    id: line-station-神田
+- assertVisible:
+    id: pending-count
+    text: '\+2 選択中'
+- tapOn:
+    id: bulk-commit
+- assertVisible:
+    id: line-visited
+    text: '2'
+- assertVisible: 訪問済み
+- back
+- tapOn:
+    id: tab-index
+- assertVisible:
+    id: total-stations
+    text: '2'

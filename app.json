@@ -13,13 +13,15 @@
       "bundleIdentifier": "app.ekilog",
       "infoPlist": {
         "CFBundleDevelopmentRegion": "ja",
-        "CFBundleLocalizations": ["ja"]
+        "CFBundleLocalizations": [
+          "ja"
+        ]
       }
     },
     "android": {
       "package": "app.ekilog",
       "adaptiveIcon": {
-        "backgroundColor": "#FFFFFF",
+        "backgroundColor": "#18181B",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
@@ -75,7 +77,9 @@
           "photosPermission": "駅で撮った写真を記録に添付し、撮影場所から訪れた駅を見つけるために写真を使います。",
           "savePhotosPermission": false,
           "isAccessMediaLocationEnabled": true,
-          "granularPermissions": ["photo"]
+          "granularPermissions": [
+            "photo"
+          ]
         }
       ],
       [

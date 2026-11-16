@@ -1,0 +1,20 @@
+# 写真から記録（docs/SPEC.md 4.3）。テスト用の写真（撮影位置つき）を端末に入れてから実行する。
+#   adb push e2e/assets/*.jpg /sdcard/Pictures/ など
+appId: app.ekilog
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: tab-settings
+- tapOn:
+    id: open-photo-import-settings
+- tapOn:
+    id: pick-photos
+# OS の写真ピッカーで写真を選ぶ（端末ごとに操作が違うので、ここは手で選ぶか端末に合わせて書く）
+- waitForAnimationToEnd
+- assertVisible:
+    id: photo-import-summary
+- tapOn:
+    id: photo-import-submit
+- assertVisible:
+    id: home-screen

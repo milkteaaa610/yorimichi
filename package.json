@@ -20,7 +20,6 @@
     "@expo-google-fonts/hind": "^0.4.1",
     "@expo-google-fonts/inter": "^0.4.2",
     "@expo-google-fonts/jost": "^0.4.2",
-    "@expo-google-fonts/noto-sans-jp": "^0.4.4",
     "@expo-google-fonts/source-sans-3": "^0.4.2",
     "@expo/metro-runtime": "~58.0.17",
     "@react-native-community/datetimepicker": "9.2.1",
@@ -58,6 +57,7 @@
     "sql.js": "^1.16.0"
   },
   "devDependencies": {
+    "@expo-google-fonts/noto-sans-jp": "^0.4.4",
     "@testing-library/react-native": "^14.1.0",
     "@types/better-sqlite3": "^9.6.0",
     "@types/geojson": "^7946.0.16",
