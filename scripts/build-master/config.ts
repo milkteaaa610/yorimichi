@@ -12,6 +12,7 @@ export const CACHE_DIR = '.cache/ksj';
 export const OUT_DB = 'assets/db/stations.db';
 export const OUT_MAP_DIR = 'assets/map';
 export const OUT_VERSION = 'src/data/masterVersion.ts';
+export const OUT_MUNI_INDEX = 'src/data/muniMaps.ts';
 
 /** 入力（リポジトリで管理する自前データ） */
 export const DATA_DIR = 'data';

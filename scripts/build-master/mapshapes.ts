@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import { OUT_MAP_DIR } from './config';
+import { OUT_MAP_DIR, OUT_MUNI_INDEX } from './config';
 import { mapshaper } from './muni';
 import { type Coord } from './n02';
 
@@ -329,6 +329,19 @@ export function buildMapShapes(
     muniBytes += json.length;
     fs.writeFileSync(path.join(OUT_MAP_DIR, 'muni', `${pref2}.json`), json);
   }
+  // アプリから都道府県コードで引けるように、読み込み口をまとめたファイルも書き出す
+  const codes = [...outlines.keys()].sort((a, b) => a - b);
+  fs.writeFileSync(
+    OUT_MUNI_INDEX,
+    `// npm run build:master -- --map が書き出す。手で編集しない。\n` +
+      `import type { MuniMapData } from '../ui/maps/types';\n\n` +
+      `/** 都道府県ごとの市区町村の地図。開いた県のぶんだけ読み込む。 */\n` +
+      `export const MUNI_MAPS: Record<number, () => MuniMapData> = {\n` +
+      codes
+        .map((c) => `  ${c}: () => require('../../assets/map/muni/${String(c).padStart(2, '0')}.json'),\n`)
+        .join('') +
+      `};\n`,
+  );
   fs.rmSync(tmp, { recursive: true });
   return { japanBytes: japanJson.length, muniBytes };
 }

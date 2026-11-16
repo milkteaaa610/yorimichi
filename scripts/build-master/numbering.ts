@@ -174,7 +174,7 @@ export function applyLineDef(def: LineDef, ctx: ApplyContext): DefEntry[] {
       const tokens = s.spec.split('>').map(parseToken);
       if (tokens.length < 2) throw new Error(`${def.key}: path は「起点>終点」で書きます: ${s.spec}`);
       const g = getGraph();
-      const savedLast = last;
+      const savedLast: string | null = last;
       const groups = tokens.map((t) => {
         const r = resolve(t.name);
         last = r;
