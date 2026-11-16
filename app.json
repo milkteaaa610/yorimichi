@@ -1,0 +1,95 @@
+{
+  "expo": {
+    "name": "エキログ",
+    "slug": "ekilog",
+    "scheme": "ekilog",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FFFFFF",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "app.ekilog",
+      "infoPlist": {
+        "CFBundleDevelopmentRegion": "ja",
+        "CFBundleLocalizations": ["ja"]
+      }
+    },
+    "android": {
+      "package": "app.ekilog",
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "root": "src/app",
+          "headers": {
+            "Cross-Origin-Embedder-Policy": "credentialless",
+            "Cross-Origin-Opener-Policy": "same-origin"
+          }
+        }
+      ],
+      "expo-sqlite",
+      "expo-font",
+      "expo-image",
+      "expo-asset",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 160,
+          "backgroundColor": "#FFFFFF"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "現在地の近くの駅を表示するために位置情報を使います。",
+          "locationAlwaysAndWhenInUsePermission": "駅に着いたことを自動で見つけて記録するために、アプリを閉じているときも位置情報を使います。",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#18181B"
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "駅で撮った写真を記録に添付し、撮影場所から訪れた駅を見つけるために写真を使います。",
+          "savePhotosPermission": false,
+          "isAccessMediaLocationEnabled": true,
+          "granularPermissions": ["photo"]
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "駅で撮った写真を記録に添付し、撮影場所から訪れた駅を見つけるために写真を使います。",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      "@react-native-community/datetimepicker"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
