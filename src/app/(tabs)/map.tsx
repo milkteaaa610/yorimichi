@@ -1,6 +1,6 @@
 /** 04 地図（都道府県・市区町村） */
 import { router, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { type PrefStat, getPrefStats } from '@/db/queries';
@@ -25,13 +25,16 @@ export default function MapScreen() {
   const params = useLocalSearchParams<{ view?: string }>();
   const [settings] = useSettings();
   const stats = useLive((db) => getPrefStats(db, settings.countPass), [settings.countPass]);
-  const [mode, setMode] = useState<ViewMode>('pref');
+  const paramView = params.view === 'muni' || params.view === 'pref' ? params.view : null;
+  const [mode, setMode] = useState<ViewMode>(paramView ?? 'pref');
+  // ホームの「市区町村」から開いたときなど、URL の指定が変わったら表示を合わせる
+  const [appliedParam, setAppliedParam] = useState(paramView);
+  if (paramView !== appliedParam) {
+    setAppliedParam(paramView);
+    if (paramView) setMode(paramView);
+  }
   const [selected, setSelected] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
-
-  useEffect(() => {
-    if (params.view === 'muni' || params.view === 'pref') setMode(params.view);
-  }, [params.view]);
 
   const japan = getJapanMap();
   const byCode = useMemo(() => new Map(stats.map((s) => [String(s.code), s])), [stats]);

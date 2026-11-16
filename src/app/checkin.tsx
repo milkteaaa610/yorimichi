@@ -36,25 +36,21 @@ export default function CheckinScreen() {
   const location = useCurrentLocation();
 
   const [query, setQuery] = useState('');
-  const [selectedId, setSelectedId] = useState<number | null>(
-    params.stationId ? Number(params.stationId) : null,
-  );
-  const [touched, setTouched] = useState(!!params.stationId);
+  // 自分で選んだ駅。選ぶまでは、現在地にいちばん近い駅を選んでいることにする
+  const [pickedId, setPickedId] = useState<number | null>(params.stationId ? Number(params.stationId) : null);
   const [kind, setKind] = useState<VisitKind>('got_off');
   const [dateKey, setDateKey] = useState(params.date ?? todayKey());
   const [memo, setMemo] = useState('');
   const [photos, setPhotos] = useState<PhotoInput[]>([]);
-  const [suggested, setSuggested] = useState<PhotoInput[]>([]);
+  const [suggestion, setSuggestion] = useState<{ key: string; photos: PhotoInput[] }>({ key: '', photos: [] });
 
   const nearby = useMemo(
     () => (location.coords ? master.nearest(location.coords.lat, location.coords.lng, 3, 50) : []),
     [location.coords, master],
   );
 
-  // 現在地がわかったら、いちばん近い駅を選んでおく（自分で選んだあとは変えない）
-  useEffect(() => {
-    if (!touched && selectedId === null && nearby.length > 0) setSelectedId(nearby[0].station.id);
-  }, [nearby, touched, selectedId]);
+  const selectedId = pickedId ?? nearby[0]?.station.id ?? null;
+  const setSelectedId = setPickedId;
 
   const selected = selectedId !== null ? master.station(selectedId) : undefined;
   const options = useMemo(() => {
@@ -70,21 +66,20 @@ export default function CheckinScreen() {
   );
   const results = useMemo(() => (query.trim() ? master.search(query, 20) : []), [query, master]);
 
-  // その日に駅の近くで撮った写真を、添付の候補として探す
+  // その日に駅の近くで撮った写真を、添付の候補として探す（駅・日付・添付済みの写真が変わったら探し直す）
   const photoKeys = photos.map((p) => p.key).join('|');
+  const suggestKey = settings.suggestPhotos && selected ? `${selected.id}|${dateKey}|${photoKeys}` : '';
   useEffect(() => {
+    if (suggestKey === '' || !selected) return;
     let alive = true;
-    setSuggested([]);
-    if (!settings.suggestPhotos || !selected) return;
-    findPhotosNear(selected, dateKey, new Set(photos.map((p) => p.key))).then((found) => {
-      if (alive) setSuggested(found);
+    findPhotosNear(selected, dateKey, new Set(photoKeys.split('|'))).then((found) => {
+      if (alive) setSuggestion({ key: suggestKey, photos: found });
     });
     return () => {
       alive = false;
     };
-    // photos の中身は photoKeys で見る
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected?.id, dateKey, settings.suggestPhotos, photoKeys]);
+  }, [suggestKey, selected, dateKey, photoKeys]);
+  const suggested = suggestion.key === suggestKey ? suggestion.photos : [];
 
   const room = MAX_PHOTOS_PER_VISIT - photos.length;
   const addPhotos = (list: PhotoInput[]) => {
@@ -158,7 +153,6 @@ export default function CheckinScreen() {
               sub={master.describe(s.id)}
               onPress={() => {
                 setSelectedId(s.id);
-                setTouched(true);
                 setQuery('');
               }}
             />
@@ -237,10 +231,7 @@ export default function CheckinScreen() {
                     testID={`option-${station.name}`}
                     accessibilityRole="radio"
                     accessibilityState={{ checked: on }}
-                    onPress={() => {
-                      setSelectedId(station.id);
-                      setTouched(true);
-                    }}
+                    onPress={() => setSelectedId(station.id)}
                     style={{
                       minHeight: 64,
                       paddingVertical: 12,

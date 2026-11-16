@@ -3,9 +3,11 @@
  *
  * 画像を引き伸ばすのではなく、表示する範囲（viewBox）を変えて描き直すので、拡大しても線がぼやけない。
  * 1本指のドラッグで移動、2本指でピンチ、右下のボタンでも拡大・縮小できる。
+ * ジェスチャーは react-native-gesture-handler（v3 のフック）で受ける。
  */
-import { type ReactNode, useCallback, useMemo, useRef, useState } from 'react';
-import { type GestureResponderEvent, type LayoutChangeEvent, PanResponder, Pressable, View } from 'react-native';
+import { type ReactNode, useMemo, useRef, useState } from 'react';
+import { type LayoutChangeEvent, Pressable, View } from 'react-native';
+import { GestureDetector, usePanGesture, usePinchGesture, useSimultaneousGestures } from 'react-native-gesture-handler';
 
 import { Icon } from '../Icon';
 import { Text } from '../Text';
@@ -45,6 +47,35 @@ export function clampView(
   return { scale, cx: fit(view.cx, content.width, w), cy: fit(view.cy, content.height, h) };
 }
 
+/** ジェスチャーの始まりの状態と、いまの動き。表示範囲はここから計算する。 */
+type Gesture2D = {
+  base: View2D;
+  /** ピンチを始めた点（枠の中の位置） */
+  focal: { x: number; y: number };
+  tx: number;
+  ty: number;
+  scale: number;
+};
+
+/** ジェスチャーの動きを、表示する範囲に直す（指の下の地図の点が、指についてくるように）。 */
+export function applyGesture(
+  content: { width: number; height: number },
+  container: { width: number; height: number },
+  g: Gesture2D,
+): View2D {
+  const unit = Math.max(content.width / container.width, content.height / container.height);
+  const k0 = unit / g.base.scale;
+  const scale = g.base.scale * g.scale;
+  const k1 = unit / scale;
+  const mapX = g.base.cx + (g.focal.x - container.width / 2) * k0;
+  const mapY = g.base.cy + (g.focal.y - container.height / 2) * k0;
+  return {
+    scale,
+    cx: mapX - (g.focal.x + g.tx - container.width / 2) * k1,
+    cy: mapY - (g.focal.y + g.ty - container.height / 2) * k1,
+  };
+}
+
 export function Zoomable({
   width,
   height,
@@ -60,95 +91,69 @@ export function Zoomable({
   const content = useMemo(() => ({ width, height }), [width, height]);
   const [box, setBox] = useState<{ width: number; height: number } | null>(null);
   const [view, setView] = useState<View2D>({ scale: 1, cx: width / 2, cy: height / 2 });
-  const live = useRef({ view, box, content, maxScale });
-  live.current = { view, box, content, maxScale };
+  // 指を置いている間の状態。描画には使わず、ジェスチャーの中だけで読み書きする
+  const gesture = useRef<(Gesture2D & { panOrigin: { x: number; y: number } }) | null>(null);
 
-  const start = useRef<{
-    view: View2D;
-    touches: number;
-    x: number;
-    y: number;
-    dist: number;
-    focal: { x: number; y: number };
-  } | null>(null);
-
-  const apply = useCallback((next: View2D) => {
-    const { box: b, content: c, maxScale: m } = live.current;
-    if (!b) return;
-    setView(clampView(c, b, next, m));
-  }, []);
-
-  const responder = useMemo(() => {
-    const read = (e: GestureResponderEvent) => {
-      const t = e.nativeEvent.touches;
-      if (t.length >= 2) {
-        const dx = t[0].pageX - t[1].pageX;
-        const dy = t[0].pageY - t[1].pageY;
-        return {
-          touches: 2,
-          x: (t[0].locationX + t[1].locationX) / 2,
-          y: (t[0].locationY + t[1].locationY) / 2,
-          px: (t[0].pageX + t[1].pageX) / 2,
-          py: (t[0].pageY + t[1].pageY) / 2,
-          dist: Math.hypot(dx, dy),
-        };
-      }
-      const one = t[0] ?? e.nativeEvent;
-      return { touches: 1, x: one.locationX, y: one.locationY, px: one.pageX, py: one.pageY, dist: 0 };
+  const apply = (next: View2D) => {
+    if (box) setView(clampView(content, box, next, maxScale));
+  };
+  /** いまの表示を起点にして、ジェスチャーを測り始める。pan は、その時点までのパンの移動量 */
+  const begin = (focal: { x: number; y: number } | null, pan: { x: number; y: number }) => {
+    if (!box) return;
+    const g = gesture.current;
+    const base = g ? applyGesture(content, box, g) : view;
+    gesture.current = {
+      base,
+      focal: focal ?? g?.focal ?? { x: box.width / 2, y: box.height / 2 },
+      tx: 0,
+      ty: 0,
+      scale: 1,
+      panOrigin: pan,
     };
-    const begin = (e: GestureResponderEvent) => {
-      const { view: v, box: b, content: c } = live.current;
-      if (!b) return;
-      const p = read(e);
-      const vb = computeViewBox(c, b, v);
-      start.current = {
-        view: v,
-        touches: p.touches,
-        x: p.px,
-        y: p.py,
-        dist: p.dist,
-        // 指の下にある地図上の点。拡大してもこの点が指の下に残るようにする
-        focal: { x: vb.x + (p.x / b.width) * vb.w, y: vb.y + (p.y / b.height) * vb.h },
-      };
-    };
-    return PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: (e, g) =>
-        e.nativeEvent.touches.length >= 2 || Math.abs(g.dx) + Math.abs(g.dy) > 6,
-      onPanResponderTerminationRequest: () => false,
-      onPanResponderGrant: begin,
-      onPanResponderMove: (e) => {
-        const { box: b, content: c } = live.current;
-        if (!b) return;
-        const p = read(e);
-        // 指の本数が変わったら、そこから測り直す
-        if (!start.current || start.current.touches !== p.touches) {
-          begin(e);
-          return;
-        }
-        const s = start.current;
-        const unit = Math.max(c.width / b.width, c.height / b.height);
-        const scale =
-          p.touches === 2 && s.dist > 0 ? s.view.scale * (p.dist / s.dist) : s.view.scale;
-        const k = unit / scale;
-        if (p.touches === 2) {
-          const { width: bw, height: bh } = b;
-          // ピンチの中心に、始めた時と同じ地図上の点が来るように
-          const cxNow = s.focal.x - (p.x - bw / 2) * k;
-          const cyNow = s.focal.y - (p.y - bh / 2) * k;
-          apply({ scale, cx: cxNow, cy: cyNow });
-        } else {
-          apply({ scale, cx: s.view.cx - (p.px - s.x) * k, cy: s.view.cy - (p.py - s.y) * k });
-        }
-      },
-      onPanResponderRelease: () => {
-        start.current = null;
-      },
-      onPanResponderTerminate: () => {
-        start.current = null;
-      },
-    });
-  }, [apply]);
+  };
+  const onPan = (x: number, y: number) => {
+    if (!gesture.current) begin(null, { x, y });
+    const g = gesture.current;
+    if (!g || !box) return;
+    g.tx = x - g.panOrigin.x;
+    g.ty = y - g.panOrigin.y;
+    apply(applyGesture(content, box, g));
+  };
+  const onPinch = (scale: number) => {
+    const g = gesture.current;
+    if (!g || !box) return;
+    g.scale = scale;
+    apply(applyGesture(content, box, g));
+  };
+
+  // パンの移動量は、パンを始めてからの合計で届く。ピンチの前後で起点を取り直すために覚えておく
+  const lastPan = useRef({ x: 0, y: 0 });
+  const pan = usePanGesture({
+    runOnJS: true,
+    minDistance: 6,
+    onActivate: (e) => {
+      lastPan.current = { x: e.translationX, y: e.translationY };
+      onPan(e.translationX, e.translationY);
+    },
+    onUpdate: (e) => {
+      lastPan.current = { x: e.translationX, y: e.translationY };
+      onPan(e.translationX, e.translationY);
+    },
+    onFinalize: () => {
+      lastPan.current = { x: 0, y: 0 };
+      gesture.current = null;
+    },
+  });
+  const pinch = usePinchGesture({
+    runOnJS: true,
+    onActivate: (e) => begin({ x: e.focalX, y: e.focalY }, lastPan.current),
+    onUpdate: (e) => onPinch(e.scale),
+    // ピンチだけ終わってパンが続くときは、次のパンの動きで起点を取り直す
+    onFinalize: () => {
+      gesture.current = null;
+    },
+  });
+  const both = useSimultaneousGestures(pan, pinch);
 
   const onLayout = (e: LayoutChangeEvent) => {
     const { width: w, height: h } = e.nativeEvent.layout;
@@ -158,8 +163,12 @@ export function Zoomable({
   const zoomBy = (factor: number) => apply({ ...view, scale: view.scale * factor });
 
   return (
-    <View style={{ flex: 1 }} onLayout={onLayout} {...responder.panHandlers}>
-      {box && children(computeViewBox(content, box, view))}
+    <View style={{ flex: 1 }}>
+      <GestureDetector gesture={both}>
+        <View style={{ flex: 1 }} onLayout={onLayout}>
+          {box && children(computeViewBox(content, box, view))}
+        </View>
+      </GestureDetector>
       <View style={{ position: 'absolute', right: 16, bottom: 16, gap: 8 }}>
         <ZoomButton label="拡大" onPress={() => zoomBy(1.6)} disabled={view.scale >= maxScale}>
           <Icon name="plus" size={20} />

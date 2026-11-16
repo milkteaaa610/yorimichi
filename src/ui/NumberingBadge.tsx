@@ -101,9 +101,20 @@ export function StationBadge({ badge, size }: { badge: BadgeInfo; size?: number 
 }
 
 /** 一覧用。バッジを max 個まで出し、残りは「+8」のように省略する。 */
-export function BadgeRow({ badges, max = 2, size = 26 }: { badges: BadgeInfo[]; max?: number; size?: number }) {
+export function BadgeRow({
+  badges,
+  max = 2,
+  size = 26,
+  showMore = true,
+}: {
+  badges: BadgeInfo[];
+  max?: number;
+  size?: number;
+  /** 省略したバッジの数（+8）を出す */
+  showMore?: boolean;
+}) {
   if (badges.length === 0) return null;
-  const rest = badges.length - max;
+  const rest = showMore ? badges.length - max : 0;
   return (
     <>
       {badges.slice(0, max).map((b) => (

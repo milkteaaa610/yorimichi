@@ -58,15 +58,13 @@ export function RegionMap({ width, height, regions, fillOf, selected, onSelect, 
   const current = selected ? regions.find((r) => r.id === selected) : undefined;
   const index = useMemo(() => new RegionIndex(regions), [regions]);
   const box = useRef<ComponentRef<typeof View>>(null);
-  const vbRef = useRef(vb);
-  vbRef.current = vb;
 
   const onPress = (e: GestureResponderEvent) => {
     if (!onSelect || !box.current) return;
     const { pageX, pageY } = e.nativeEvent;
     box.current.measureInWindow((left, top, w, h) => {
       if (w === 0 || h === 0) return;
-      const v = vbRef.current;
+      const v = vb;
       // preserveAspectRatio="xMidYMid meet" と同じ計算で、画面の位置を地図の座標に直す
       const scale = Math.min(w / v.w, h / v.h);
       const ox = (w - v.w * scale) / 2;

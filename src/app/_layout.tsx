@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { useAutoCheckin } from '@/auto/useAutoCheckin';
 import { DbProvider } from '@/db/provider';
 import { APP_FONTS } from '@/ui/fonts';
 import { colors } from '@/ui/theme';
@@ -16,6 +17,7 @@ export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts(APP_FONTS);
   const [dbReady, setDbReady] = useState(false);
   const ready = (fontsLoaded || !!fontError) && dbReady;
+  useAutoCheckin(dbReady);
 
   useEffect(() => {
     if (ready) SplashScreen.hideAsync().catch(() => {});
@@ -33,6 +35,7 @@ export default function RootLayout() {
               <Stack.Screen name="search" options={{ presentation: 'modal' }} />
               <Stack.Screen name="photo-import" options={{ presentation: 'modal' }} />
               <Stack.Screen name="map-view" options={{ presentation: 'fullScreenModal' }} />
+              <Stack.Screen name="auto-review" />
             </Stack>
           )}
         </DbProvider>

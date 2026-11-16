@@ -1,10 +1,10 @@
 /** 駅を検索（ホームの検索ボタンから） */
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 
-import { getVisitCounts } from '@/db/queries';
-import { useLive, useMaster } from '@/db/provider';
+import { getExcludedStations, getVisitCounts, setExcluded } from '@/db/queries';
+import { useLive, useMaster, useMutate } from '@/db/provider';
 import { HeaderBar, StackScreen } from '@/ui/Screen';
 import { SearchField } from '@/ui/SearchField';
 import { RowMeta, StationRow } from '@/ui/StationRow';
@@ -13,7 +13,11 @@ import { IconButton } from '@/ui/controls';
 import { colors } from '@/ui/theme';
 
 export default function SearchScreen() {
+  const { mode } = useLocalSearchParams<{ mode?: string }>();
+  const excluding = mode === 'exclude';
   const master = useMaster();
+  const mutate = useMutate();
+  const excluded = useLive((db) => new Set(getExcludedStations(db)));
   const [query, setQuery] = useState('');
   const results = useMemo(() => master.search(query, 40), [query, master]);
   const counts = useLive((db) => getVisitCounts(db, results.map((s) => s.id)), [results]);
@@ -27,7 +31,7 @@ export default function SearchScreen() {
           left={<IconButton icon="close" label="閉じる" onPress={() => router.back()} />}
           title={
             <Text size={16} weight={700} accessibilityRole="header">
-              駅を検索
+              {excluding ? '除外する駅を追加' : '駅を検索'}
             </Text>
           }
         />
@@ -36,7 +40,9 @@ export default function SearchScreen() {
       <View>
         {query.trim() === '' && (
           <Text size={13} leading={1.6} color={colors.sub} style={{ paddingVertical: 16 }}>
-            駅名は漢字でもひらがなでも探せます。路線名を入れると、その路線の駅が並びます。
+            {excluding
+              ? '毎日使う駅など、自動チェックインで記録しない駅を選んでください。'
+              : '駅名は漢字でもひらがなでも探せます。路線名を入れると、その路線の駅が並びます。'}
           </Text>
         )}
         {query.trim() !== '' && results.length === 0 && (
@@ -53,8 +59,21 @@ export default function SearchScreen() {
               name={s.name}
               badges={master.badges(s.id)}
               sub={master.describe(s.id)}
-              right={n > 0 ? <RowMeta top={`${n}回`} bottom="訪問済み" /> : undefined}
-              onPress={() => router.push(`/station/${s.id}`)}
+              right={
+                excluding ? (
+                  excluded.has(s.id) ? <RowMeta top="除外中" /> : undefined
+                ) : n > 0 ? (
+                  <RowMeta top={`${n}回`} bottom="訪問済み" />
+                ) : undefined
+              }
+              onPress={() => {
+                if (!excluding) {
+                  router.push(`/station/${s.id}`);
+                  return;
+                }
+                mutate((db) => setExcluded(db, s.id, true));
+                router.back();
+              }}
             />
           );
         })}

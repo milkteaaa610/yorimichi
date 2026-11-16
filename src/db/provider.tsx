@@ -83,13 +83,20 @@ export function useMaster(): MasterData {
   return useAppData().master;
 }
 
+function depKey(d: unknown): string {
+  if (d instanceof Set) return JSON.stringify([...d]);
+  if (typeof d === 'object' && d !== null) return JSON.stringify(d);
+  return String(d);
+}
+
 /** データベースから読む。記録が変わるたびに読み直す。 */
 export function useLive<T>(read: (db: Db, master: MasterData) => T, deps: unknown[] = []): T {
   const { db, master } = useAppData();
   const v = useSyncExternalStore(subscribeDataChanged, getDataVersion, getDataVersion);
-  // read は毎回新しい関数なので依存に入れない（deps で指定する）
+  // read は毎回新しい関数なので依存に入れず、読み直す条件は deps で指定する
+  const key = deps.map(depKey).join('\u0000');
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(() => read(db, master), [db, master, v, ...deps]);
+  return useMemo(() => read(db, master), [db, master, v, key]);
 }
 
 /** データベースに書く。書いたあと、読んでいる画面に知らせる。 */

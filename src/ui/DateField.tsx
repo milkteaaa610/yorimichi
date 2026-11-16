@@ -1,7 +1,7 @@
 /** 日付を選ぶ行。iOS・Android は OS の日付ピッカーを使う。 */
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useState } from 'react';
-import { Modal, Platform, Pressable, View } from 'react-native';
+import { Modal, Platform, Pressable } from 'react-native';
 
 import { formatLong, fromDateKey, toDateKey } from '../lib/date';
 import { Icon } from './Icon';

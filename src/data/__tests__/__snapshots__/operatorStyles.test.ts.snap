@@ -1,0 +1,436 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`JR東日本（JY） 1`] = `
+{
+  "layout": {
+    "background": "#FFFFFF",
+    "borderColor": "#80C241",
+    "borderWidth": 6.4,
+    "codeAlign": "flex-end",
+    "codeColor": "#18181B",
+    "codePadBottom": 1,
+    "codeSize": 15.4,
+    "fontFamily": "Hind_700Bold",
+    "hasNum": true,
+    "numColor": "#18181B",
+    "numSize": 26.9,
+    "radius": 10.2,
+    "separator": null,
+    "size": 64,
+    "topBackground": "transparent",
+    "topHeight": 21.5,
+  },
+  "style": {
+    "face": "frutiger",
+    "shape": "square",
+  },
+}
+`;
+
+exports[`ゆりかもめ（U） 1`] = `
+{
+  "layout": {
+    "background": "#1B5FAA",
+    "borderColor": "#1B5FAA",
+    "borderWidth": 0,
+    "codeAlign": "flex-end",
+    "codeColor": "#FFFFFF",
+    "codePadBottom": 1,
+    "codeSize": 15.4,
+    "fontFamily": "Geologica_700Bold",
+    "hasNum": true,
+    "numColor": "#FFFFFF",
+    "numSize": 26.9,
+    "radius": 32,
+    "separator": null,
+    "size": 64,
+    "topBackground": "transparent",
+    "topHeight": 26.9,
+  },
+  "style": {
+    "face": "eras",
+    "shape": "circle-fill",
+  },
+}
+`;
+
+exports[`りんかい線（R） 1`] = `
+{
+  "layout": {
+    "background": "#3E2A87",
+    "borderColor": "#3E2A87",
+    "borderWidth": 0,
+    "codeAlign": "flex-end",
+    "codeColor": "#FFFFFF",
+    "codePadBottom": 1,
+    "codeSize": 15.4,
+    "fontFamily": "Barlow_700Bold",
+    "hasNum": true,
+    "numColor": "#FFFFFF",
+    "numSize": 26.9,
+    "radius": 32,
+    "separator": null,
+    "size": 64,
+    "topBackground": "transparent",
+    "topHeight": 26.9,
+  },
+  "style": {
+    "face": "din",
+    "shape": "circle-fill",
+  },
+}
+`;
+
+exports[`京急電鉄（KK） 1`] = `
+{
+  "layout": {
+    "background": "#FFFFFF",
+    "borderColor": "#00A0DE",
+    "borderWidth": 5.1,
+    "codeAlign": "flex-end",
+    "codeColor": "#1D2C7A",
+    "codePadBottom": 1,
+    "codeSize": 15.4,
+    "fontFamily": "Hind_700Bold",
+    "hasNum": true,
+    "numColor": "#1D2C7A",
+    "numSize": 26.9,
+    "radius": 32,
+    "separator": null,
+    "size": 64,
+    "topBackground": "transparent",
+    "topHeight": 22.6,
+  },
+  "style": {
+    "face": "frutiger",
+    "shape": "circle-text",
+  },
+}
+`;
+
+exports[`京成電鉄（KS） 1`] = `
+{
+  "layout": {
+    "background": "#FFFFFF",
+    "borderColor": "#005BAC",
+    "borderWidth": 5.1,
+    "codeAlign": "flex-end",
+    "codeColor": "#005BAC",
+    "codePadBottom": 1,
+    "codeSize": 15.4,
+    "fontFamily": "Barlow_700Bold",
+    "hasNum": true,
+    "numColor": "#005BAC",
+    "numSize": 26.9,
+    "radius": 32,
+    "separator": null,
+    "size": 64,
+    "topBackground": "transparent",
+    "topHeight": 22.6,
+  },
+  "style": {
+    "face": "din",
+    "shape": "circle-text",
+  },
+}
+`;
+
+exports[`京王電鉄（KO） 1`] = `
+{
+  "layout": {
+    "background": "#FFFFFF",
+    "borderColor": "#DD0077",
+    "borderWidth": 3.8,
+    "codeAlign": "flex-end",
+    "codeColor": "#FFFFFF",
+    "codePadBottom": 2.9,
+    "codeSize": 15.4,
+    "fontFamily": "MPLUS1p_700Bold",
+    "hasNum": true,
+    "numColor": "#18181B",
+    "numSize": 26.9,
+    "radius": 32,
+    "separator": null,
+    "size": 64,
+    "topBackground": "#DD0077",
+    "topHeight": 25.9,
+  },
+  "style": {
+    "face": "shingo",
+    "shape": "circle-top",
+  },
+}
+`;
+
+exports[`埼玉高速鉄道（SR） 1`] = `
+{
+  "layout": {
+    "background": "#FFFFFF",
+    "borderColor": "#2F5DA8",
+    "borderWidth": 7.7,
+    "codeAlign": "flex-end",
+    "codeColor": "#18181B",
+    "codePadBottom": 1,
+    "codeSize": 15.4,
+    "fontFamily": "Inter_700Bold",
+    "hasNum": true,
+    "numColor": "#18181B",
+    "numSize": 26.9,
+    "radius": 32,
+    "separator": null,
+    "size": 64,
+    "topBackground": "transparent",
+    "topHeight": 20.4,
+  },
+  "style": {
+    "face": "helvetica",
+    "shape": "circle",
+  },
+}
+`;
+
+exports[`小田急電鉄（OH） 1`] = `
+{
+  "layout": {
+    "background": "#FFFFFF",
+    "borderColor": "#1E7FCB",
+    "borderWidth": 6.4,
+    "codeAlign": "flex-end",
+    "codeColor": "#1E7FCB",
+    "codePadBottom": 1,
+    "codeSize": 15.4,
+    "fontFamily": "Hind_700Bold",
+    "hasNum": true,
+    "numColor": "#1E7FCB",
+    "numSize": 26.9,
+    "radius": 19.2,
+    "separator": null,
+    "size": 64,
+    "topBackground": "transparent",
+    "topHeight": 21.5,
+  },
+  "style": {
+    "face": "frutiger",
+    "shape": "square-text",
+  },
+}
+`;
+
+exports[`東京メトロ（G） 1`] = `
+{
+  "layout": {
+    "background": "#FFFFFF",
+    "borderColor": "#FF9500",
+    "borderWidth": 7.7,
+    "codeAlign": "flex-end",
+    "codeColor": "#18181B",
+    "codePadBottom": 1,
+    "codeSize": 15.4,
+    "fontFamily": "Jost_600SemiBold",
+    "hasNum": true,
+    "numColor": "#18181B",
+    "numSize": 26.9,
+    "radius": 32,
+    "separator": null,
+    "size": 64,
+    "topBackground": "transparent",
+    "topHeight": 20.4,
+  },
+  "style": {
+    "face": "futura",
+    "shape": "circle",
+  },
+}
+`;
+
+exports[`東急電鉄（TY） 1`] = `
+{
+  "layout": {
+    "background": "#FFFFFF",
+    "borderColor": "#DA0442",
+    "borderWidth": 5.1,
+    "codeAlign": "center",
+    "codeColor": "#FFFFFF",
+    "codePadBottom": 0,
+    "codeSize": 15.4,
+    "fontFamily": "SourceSans3_700Bold",
+    "hasNum": true,
+    "numColor": "#18181B",
+    "numSize": 26.9,
+    "radius": 10.2,
+    "separator": null,
+    "size": 64,
+    "topBackground": "#DA0442",
+    "topHeight": 24.7,
+  },
+  "style": {
+    "face": "myriad",
+    "shape": "square-top",
+  },
+}
+`;
+
+exports[`東武鉄道（TS） 1`] = `
+{
+  "layout": {
+    "background": "#FFFFFF",
+    "borderColor": "#1F3E8E",
+    "borderWidth": 6.4,
+    "codeAlign": "flex-end",
+    "codeColor": "#18181B",
+    "codePadBottom": 1,
+    "codeSize": 15.4,
+    "fontFamily": "Hind_700Bold",
+    "hasNum": true,
+    "numColor": "#18181B",
+    "numSize": 26.9,
+    "radius": 10.2,
+    "separator": null,
+    "size": 64,
+    "topBackground": "transparent",
+    "topHeight": 21.5,
+  },
+  "style": {
+    "face": "frutiger",
+    "shape": "square",
+  },
+}
+`;
+
+exports[`東葉高速鉄道（TR） 1`] = `
+{
+  "layout": {
+    "background": "#FFFFFF",
+    "borderColor": "#3BA03C",
+    "borderWidth": 7.7,
+    "codeAlign": "flex-end",
+    "codeColor": "#18181B",
+    "codePadBottom": 1,
+    "codeSize": 15.4,
+    "fontFamily": "Hind_700Bold",
+    "hasNum": true,
+    "numColor": "#18181B",
+    "numSize": 26.9,
+    "radius": 32,
+    "separator": null,
+    "size": 64,
+    "topBackground": "transparent",
+    "topHeight": 20.4,
+  },
+  "style": {
+    "face": "frutiger",
+    "shape": "circle",
+  },
+}
+`;
+
+exports[`横浜市営地下鉄（B） 1`] = `
+{
+  "layout": {
+    "background": "#0070C0",
+    "borderColor": "#0070C0",
+    "borderWidth": 0,
+    "codeAlign": "flex-end",
+    "codeColor": "#FFFFFF",
+    "codePadBottom": 1,
+    "codeSize": 15.4,
+    "fontFamily": "SourceSans3_700Bold",
+    "hasNum": true,
+    "numColor": "#FFFFFF",
+    "numSize": 26.9,
+    "radius": 32,
+    "separator": null,
+    "size": 64,
+    "topBackground": "transparent",
+    "topHeight": 26.9,
+  },
+  "style": {
+    "face": "myriad",
+    "shape": "circle-fill",
+  },
+}
+`;
+
+exports[`相模鉄道（SO） 1`] = `
+{
+  "layout": {
+    "background": "#1D3B8B",
+    "borderColor": "#1D3B8B",
+    "borderWidth": 0,
+    "codeAlign": "flex-end",
+    "codeColor": "#FFFFFF",
+    "codePadBottom": 2.6,
+    "codeSize": 15.4,
+    "fontFamily": "Geologica_700Bold",
+    "hasNum": true,
+    "numColor": "#FFFFFF",
+    "numSize": 26.9,
+    "radius": 10.2,
+    "separator": {
+      "height": 1.9,
+      "margin": 10.2,
+    },
+    "size": 64,
+    "topBackground": "transparent",
+    "topHeight": 26.9,
+  },
+  "style": {
+    "face": "rotis",
+    "shape": "square-fill",
+  },
+}
+`;
+
+exports[`西武鉄道（SI） 1`] = `
+{
+  "layout": {
+    "background": "#FFFFFF",
+    "borderColor": "#F08300",
+    "borderWidth": 5.1,
+    "codeAlign": "center",
+    "codeColor": "#FFFFFF",
+    "codePadBottom": 0,
+    "codeSize": 15.4,
+    "fontFamily": "Inter_700Bold",
+    "hasNum": true,
+    "numColor": "#18181B",
+    "numSize": 26.9,
+    "radius": 10.2,
+    "separator": null,
+    "size": 64,
+    "topBackground": "#F08300",
+    "topHeight": 24.7,
+  },
+  "style": {
+    "face": "helvetica",
+    "shape": "square-top",
+  },
+}
+`;
+
+exports[`都営地下鉄（A） 1`] = `
+{
+  "layout": {
+    "background": "#FFFFFF",
+    "borderColor": "#E85298",
+    "borderWidth": 7.7,
+    "codeAlign": "flex-end",
+    "codeColor": "#18181B",
+    "codePadBottom": 1,
+    "codeSize": 15.4,
+    "fontFamily": "Jost_600SemiBold",
+    "hasNum": true,
+    "numColor": "#18181B",
+    "numSize": 26.9,
+    "radius": 32,
+    "separator": null,
+    "size": 64,
+    "topBackground": "transparent",
+    "topHeight": 20.4,
+  },
+  "style": {
+    "face": "futura",
+    "shape": "circle",
+  },
+}
+`;

@@ -64,6 +64,7 @@ function save(client: Database): void {
 }
 
 async function open(): Promise<Db> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const wasm = Asset.fromModule(require('sql.js/dist/sql-wasm-browser.wasm')).uri;
   const SQL = await initSqlJs({ locateFile: () => wasm });
   const masterUri = Asset.fromModule(require('../../assets/db/stations.db')).uri;

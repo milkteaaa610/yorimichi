@@ -1,6 +1,6 @@
 /** 05 路線 */
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, SectionList, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -24,21 +24,24 @@ const FILTERS: { id: Filter; label: string }[] = [
 
 type Row = { line: LineInfo; visited: number; total: number };
 
+const isFilter = (v: string | undefined): v is Filter => v === 'all' || v === 'progress' || v === 'done';
+
 export default function LinesScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ filter?: string }>();
   const master = useMaster();
   const [settings] = useSettings();
   const stats = useLive((db) => getLineStats(db, settings.countPass), [settings.countPass]);
-  const [filter, setFilter] = useState<Filter>('all');
+  const paramFilter = isFilter(params.filter) ? params.filter : null;
+  const [filter, setFilter] = useState<Filter>(paramFilter ?? 'all');
+  // ホームの「制覇した路線」から開いたときなど、URL の指定が変わったら絞り込みを合わせる
+  const [appliedParam, setAppliedParam] = useState(paramFilter);
+  if (paramFilter !== appliedParam) {
+    setAppliedParam(paramFilter);
+    if (paramFilter) setFilter(paramFilter);
+  }
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState('');
-
-  useEffect(() => {
-    if (params.filter === 'done' || params.filter === 'progress' || params.filter === 'all') {
-      setFilter(params.filter);
-    }
-  }, [params.filter]);
 
   const { sections, visitedCount, doneCount } = useMemo(() => {
     const q = query.trim();
